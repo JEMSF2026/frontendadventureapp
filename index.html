@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>JEMS Adventure Park</title>
+    <link rel="stylesheet" href="css/index.css">
+</head>
+<body>
+
+<header>
+    <h1>JEMS Adventure Park</h1>
+
+<!--    Tilføjer indkøbskurvikon + counter til header-->
+    <div id="cart-icon">
+        🛒 <span id="cart-count">0</span>
+    </div>
+</header>
+
+<main>
+
+    <section id="cart-view">
+
+<!--        indeholder indkøbskurv og kundeinformationer side by side-->
+        <div class="cart-layout">
+
+            <div class="cart-box">
+                <h3>Indkøbskurv</h3>
+
+                <div id="cart-items"></div>
+
+                <p><strong>Totalpris: <span id="total-price">0 DKK</span></strong></p>
+            </div>
+
+            <div class="customer-box">
+                <h3>Kundeinformationer</h3>
+
+                <label>Fornavn:</label>
+                <input type="text">
+
+                <label>Efternavn:</label>
+                <input type="text">
+
+                <label>Email:</label>
+                <input type="email">
+
+                <label>Telefonnummer:</label>
+                <input type="text">
+
+                <label>Antal deltagere:</label>
+                <input type="number">
+
+            </div>
+
+        </div>
+
+        <div class="checkout">
+
+            <label>
+                <input type="checkbox">
+                Accepter betingelser for booking af aktivitet.
+            </label>
+
+            <button>Book aktivitet</button>
+
+        </div>
+
+    </section>
+
+</main>
+
+<script src="js/cart.js"></script>
+
+</body>
+</html>
