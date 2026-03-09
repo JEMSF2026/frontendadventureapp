@@ -60,7 +60,7 @@ async function loadTimeslots(activityId, month, year) {
 
 // Byg kalender
 function buildCalendar(timeslots, month, year, activityId, activityName) {
-    selectedTimeslot = null; // nulstil valgt tid
+    selectedTimeslot = null;
 
     const monthNames = [
         "Januar","Februar","Marts","April","Maj","Juni",
@@ -210,7 +210,7 @@ function formatTime(dateTimeString){
 
 // Vis tider
 function showTimes(timeslots){
-    selectedTimeslot = null; // nulstil ved ny dag
+    selectedTimeslot = null;
     const tbody = document.querySelector("#timeTable tbody");
 
     if(!timeslots || timeslots.length === 0){
@@ -274,7 +274,4 @@ function addToCart(){
 const today = new Date();
 currentMonth = today.getMonth();
 currentYear = today.getFullYear();
-
-loadActivities().then(() => {
-    loadTimeslots(currentActivityId, currentMonth, currentYear);
-});
+loadActivities().then(() => loadTimeslots(currentActivityId, currentMonth, currentYear));
