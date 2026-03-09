@@ -44,7 +44,7 @@ function displayCart() {
         totalPrice += Number(item.price);
     });
 
-    document.getElementById("total-price").innerText = totalPrice + "DKK";
+    document.getElementById("total-price").innerText = totalPrice + " DKK";
 }
 
 document.getElementById("cart-icon").addEventListener("click", openCart);
