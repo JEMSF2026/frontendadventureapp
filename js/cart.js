@@ -1,3 +1,5 @@
+import { renderConfirmation } from "./bookingconfirmation.js";
+
 const content = document.querySelector(".content");
 
 function renderCart() {
@@ -80,6 +82,8 @@ function renderCart() {
     content.appendChild(main);
 
     displayCart();
+
+    button.addEventListener("click", bookActivity)
 }
 
 //henter indkøbskurv fra LocalStorage, returnere tom liste hvis den er tom.
@@ -129,6 +133,40 @@ function displayCart() {
     });
 
     document.getElementById("total-price").innerText = totalPrice + " DKK";
+}
+
+async function bookActivity(){
+    const inputs = document.querySelectorAll(".customer-box input");
+
+    const customer = {
+        firstName: inputs[0].value,
+        lastName: inputs[1].value,
+        email: inputs[2].value,
+        phoneNumber: inputs[3].value,
+    };
+
+    const participants = inputs[4].value;
+    const cart = getCart();
+
+    const reservation = {
+        customer: customer,
+        participants: participants,
+        cartItems: cart
+    };
+
+    const response = await fetch("http://localhost:8080/reservations", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(reservation)
+    });
+    
+    const data = await response.json();
+
+    renderConfirmation(data.bookingNumber, customer, cart);
+
+    localStorage.removeItem("cart");
 }
 
 document.getElementById("cart-icon").addEventListener("click", openCart);
