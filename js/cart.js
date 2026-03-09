@@ -1,3 +1,58 @@
+function renderCart(){
+    document.querySelector(".content").innerHTML = `
+    <main>
+
+            <section id="cart-view">
+
+                <div class="cart-layout">
+
+                    <div class="cart-box">
+                        <h3>Indkøbskurv</h3>
+
+                        <div id="cart-items"></div>
+
+                        <p><strong>Totalpris: <span id="total-price">0 DKK</span></strong></p>
+                    </div>
+
+                    <div class="customer-box">
+                        <h3>Kundeinformationer</h3>
+
+                        <label>Fornavn:</label>
+                        <input type="text">
+
+                        <label>Efternavn:</label>
+                        <input type="text">
+
+                        <label>Email:</label>
+                        <input type="email">
+
+                        <label>Telefonnummer:</label>
+                        <input type="text">
+
+                        <label>Antal deltagere:</label>
+                        <input type="number">
+                    </div>
+
+                </div>
+
+                <div class="checkout">
+
+                    <label>
+                        <input type="checkbox">
+                        Accepter betingelser for booking af aktivitet.
+                    </label>
+
+                    <button>Book aktivitet</button>
+
+                </div>
+
+            </section>
+
+        </main>
+    `;
+    displayCart();
+}
+
 //henter indkøbskurv fra LocalStorage, returnere tom liste hvis den er tom.
 function getCart(){
     const cart = localStorage.getItem("cart");
@@ -48,3 +103,5 @@ function displayCart() {
 }
 
 document.getElementById("cart-icon").addEventListener("click", openCart);
+
+renderCart();
