@@ -1,55 +1,84 @@
-function renderCart(){
-    document.querySelector(".content").innerHTML = `
-    <main>
+const content = document.querySelector(".content");
 
-            <section id="cart-view">
+function renderCart() {
 
-                <div class="cart-layout">
+    content.innerHTML = "";
 
-                    <div class="cart-box">
-                        <h3>Indkøbskurv</h3>
+    const main = document.createElement("main");
+    const section = document.createElement("section");
+    section.id = "cart-view";
 
-                        <div id="cart-items"></div>
+    const cartLayout = document.createElement("div");
+    cartLayout.className = "cart-layout";
 
-                        <p><strong>Totalpris: <span id="total-price">0 DKK</span></strong></p>
-                    </div>
+    const cartBox = document.createElement("div");
+    cartBox.className = "cart-box";
 
-                    <div class="customer-box">
-                        <h3>Kundeinformationer</h3>
+    const cartTitle = document.createElement("h3");
+    cartTitle.textContent = "Indkøbskurv";
 
-                        <label>Fornavn:</label>
-                        <input type="text">
+    const cartItems = document.createElement("div");
+    cartItems.id = "cart-items";
 
-                        <label>Efternavn:</label>
-                        <input type="text">
+    const totalPrice = document.createElement("p");
+    totalPrice.innerHTML = "<strong>Totalpris: <span id='total-price'>0 DKK</span></strong>";
 
-                        <label>Email:</label>
-                        <input type="email">
+    cartBox.appendChild(cartTitle);
+    cartBox.appendChild(cartItems);
+    cartBox.appendChild(totalPrice);
 
-                        <label>Telefonnummer:</label>
-                        <input type="text">
+    const customerBox = document.createElement("div");
+    customerBox.className = "customer-box";
 
-                        <label>Antal deltagere:</label>
-                        <input type="number">
-                    </div>
+    const customerTitle = document.createElement("h3");
+    customerTitle.textContent = "Kundeinformationer";
 
-                </div>
+    function createInput(labelText, type) {
+        const label = document.createElement("label");
+        label.textContent = labelText;
 
-                <div class="checkout">
+        const input = document.createElement("input");
+        input.type = type;
 
-                    <label>
-                        <input type="checkbox">
-                        Accepter betingelser for booking af aktivitet.
-                    </label>
+        customerBox.appendChild(label);
+        customerBox.appendChild(input);
+    }
 
-                    <button>Book aktivitet</button>
+    createInput("Fornavn:", "text");
+    createInput("Efternavn:", "text");
+    createInput("Email:", "email");
+    createInput("Telefonnummer:", "text");
+    createInput("Antal deltagere:", "number");
 
-                </div>
+    customerBox.prepend(customerTitle);
 
-            </section>
+    cartLayout.appendChild(cartBox);
+    cartLayout.appendChild(customerBox);
 
-        </main>
-    `;
+    const checkout = document.createElement("div");
+    checkout.className = "checkout";
+
+    const label = document.createElement("label");
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+
+    label.appendChild(checkbox);
+    label.appendChild(document.createTextNode(" Accepter betingelser for booking af aktivitet."));
+
+    const button = document.createElement("button");
+    button.textContent = "Book aktivitet";
+
+    checkout.appendChild(label);
+    checkout.appendChild(button);
+
+    section.appendChild(cartLayout);
+    section.appendChild(checkout);
+
+    main.appendChild(section);
+
+    content.appendChild(main);
+
     displayCart();
 }
 
@@ -90,7 +119,7 @@ function displayCart() {
         div.innerHTML = `
     <p>Aktivitet: ${item.activity}</p>
     <p>Dato: ${item.date}</p>
-    <p>Tidsrum: ${item.time}</p>
+    <p>Tidsrum: ${item.startTime} - ${item.endTime}</p>
     <p>Pris: ${item.price} DKK</p>
 `;
 
