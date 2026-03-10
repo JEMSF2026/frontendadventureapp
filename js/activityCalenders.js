@@ -4,44 +4,19 @@ let currentMonth;
 let currentYear;
 let currentActivityId;
 let activities = [];
-let dropdownWrapper;
 let selectedTimeslot = null;
 
-// Hent aktiviteter
+// ------------------------------
+// Hent aktiviteter fra backend
+// ------------------------------
 async function loadActivities() {
     const response = await fetch(`${backendUrl}/activities`);
     activities = await response.json();
-
-    const dropdown = document.createElement("select");
-    dropdown.id = "activitySelect";
-
-    activities.forEach(a => {
-        const option = document.createElement("option");
-        option.value = a.id;
-        option.textContent = a.name;
-        dropdown.appendChild(option);
-    });
-
-    dropdown.addEventListener("change", () => {
-        currentActivityId = parseInt(dropdown.value);
-        loadTimeslots(currentActivityId, currentMonth, currentYear);
-    });
-
-    if (!dropdownWrapper) {
-        dropdownWrapper = document.createElement("div");
-        dropdownWrapper.style.marginBottom = "20px";
-        dropdownWrapper.textContent = "Vælg aktivitet: ";
-        dropdownWrapper.appendChild(dropdown);
-        content.appendChild(dropdownWrapper);
-    } else {
-        dropdownWrapper.innerHTML = "Vælg aktivitet: ";
-        dropdownWrapper.appendChild(dropdown);
-    }
-
-    currentActivityId = activities[0].id;
 }
 
-// Hent timeslots og kalender
+// ------------------------------
+// Hent timeslots for en aktivitet
+// ------------------------------
 async function loadTimeslots(activityId, month, year) {
     const response = await fetch(`${backendUrl}/timeslots/${activityId}`);
     let timeslots = await response.json();
@@ -51,13 +26,15 @@ async function loadTimeslots(activityId, month, year) {
         return d.getFullYear() === year && d.getMonth() === month;
     });
 
-    const selectedActivity = activities.find(a => a.id === currentActivityId);
+    const selectedActivity = activities.find(a => a.id === activityId);
     const activityName = selectedActivity ? selectedActivity.name : "Aktivitet";
 
     buildCalendar(timeslots, month, year, activityId, activityName);
 }
 
-// Byg kalender med info-boks og side-by-side layout
+// ------------------------------
+// Byg kalender med info-boks
+// ------------------------------
 function buildCalendar(timeslots, month, year, activityId, activityName) {
     selectedTimeslot = null;
     const selectedActivity = activities.find(a => a.id === activityId);
@@ -222,13 +199,17 @@ function buildCalendar(timeslots, month, year, activityId, activityName) {
     calendarWrapper.querySelector("#addToCartBtn").addEventListener("click", addToCart);
 }
 
+// ------------------------------
 // Format tid
+// ------------------------------
 function formatTime(dateTimeString){
     const d = new Date(dateTimeString);
     return `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
 }
 
+// ------------------------------
 // Vis tider
+// ------------------------------
 function showTimes(timeslots){
     selectedTimeslot = null;
     const tbody = document.querySelector("#timeTable tbody");
@@ -257,7 +238,9 @@ function showTimes(timeslots){
     });
 }
 
+// ------------------------------
 // Tilføj til kurv
+// ------------------------------
 function addToCart(){
     if(!selectedTimeslot){
         alert("Du har ikke valgt en tid");
@@ -291,7 +274,9 @@ function addToCart(){
     document.querySelectorAll(".selectedTime").forEach(el => el.classList.remove("selectedTime"));
 }
 
-// Initialiser kalender — kun hvis en aktivitet er valgt via URL
+// ------------------------------
+// Initialiser kalender kun hvis en aktivitet er valgt via URL
+// ------------------------------
 const calParams = new URLSearchParams(window.location.search);
 const preselectedActivityId = calParams.get("activityId") ? parseInt(calParams.get("activityId")) : null;
 
@@ -299,8 +284,16 @@ if (preselectedActivityId) {
     const today = new Date();
     currentMonth = today.getMonth();
     currentYear = today.getFullYear();
+
     loadActivities().then(() => {
         currentActivityId = preselectedActivityId;
-        loadTimeslots(preselectedActivityId, currentMonth, currentYear);
+
+        const selectedActivity = activities.find(a => a.id === currentActivityId);
+        if (selectedActivity) {
+            loadTimeslots(currentActivityId, currentMonth, currentYear);
+        } else {
+            console.error("Aktivitet ikke fundet:", currentActivityId);
+            content.innerHTML = "<p>Aktiviteten kunne ikke findes.</p>";
+        }
     });
 }
