@@ -1,0 +1,134 @@
+/* ------------------------ */
+/* Kalender tabel styling   */
+/* ------------------------ */
+.calendar {
+    border-collapse: collapse;
+}
+
+.calendar th, .calendar td {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: center;
+    width: 40px;
+    height: 40px;
+    /* default cursor, men klikbare dage overskriver */
+}
+
+/* Tomme celler før/efter måned */
+.empty {
+    background-color: #e0e0e0; /* grå */
+}
+
+/* Klikbare dage */
+.clickable, .allAvailable, .partiallyReserved, .selected, .selectedPartial {
+    cursor: pointer !important; /* tving pointer cursor */
+}
+
+/* Alle tider ledige (grøn) */
+.allAvailable {
+    background-color: #c8e6c9; /* lys grøn */
+}
+
+.allAvailable:hover {
+    background-color: #a5d6a7; /* mørkere grøn ved hover */
+}
+
+/* Valgt dag (grøn) */
+.selected {
+    background-color: #81c784 !important; /* mørkere grøn */
+}
+
+/* Alle tider reserveret */
+.reserved {
+    background-color: #e57373; /* rød */
+    color: white;
+    cursor: not-allowed;
+}
+
+/* Nogle tider reserveret (gul) */
+.partiallyReserved {
+    background-color: #fff176; /* lys gul */
+}
+
+.partiallyReserved:hover {
+    background-color: #fdd835; /* mørkere gul ved hover */
+}
+
+/* Nogle tider reserveret, valgt */
+.selectedPartial {
+    background-color: #fbc02d !important; /* mørkere gul */
+}
+
+/* ------------------------ */
+/* Tidstabel styling        */
+/* ------------------------ */
+#timeTable {
+    border-collapse: collapse;
+    margin-top: 20px;
+    width: 200px;
+}
+
+#timeTable th, #timeTable td {
+    border: 1px solid #ccc;
+    padding: 5px 10px;
+    text-align: center;
+}
+
+/* Ledig timeslot */
+.timeAvailable {
+    background-color: #c8e6c9; /* lys grøn */
+    cursor: pointer;
+}
+
+.timeAvailable:hover {
+    background-color: #a5d6a7;
+}
+
+/* Reserveret timeslot */
+.timeReserved {
+    background-color: #e57373; /* rød */
+    color: white;
+}
+
+/* Valgt tid */
+.selectedTime {
+    background-color: #81c784 !important;
+    color: white;
+}
+
+/* ------------------------ */
+/* Generelt layout          */
+/* ------------------------ */
+.content > div {
+    display: flex;
+    gap: 40px;
+    align-items: flex-start;
+    flex-wrap: wrap; /* for at undgå at "Tilføj til kurv" ryger af sted */
+}
+
+/* Frem/tilbage knapper */
+#prevMonth, #nextMonth {
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 2px 6px;
+    margin: 0 5px;
+}
+
+/* Tilføj til kurv knap under tidstabel */
+#addToCartBtn {
+    margin-top: 10px;
+    padding: 6px 12px;
+    cursor: pointer;
+}
+
+/* Centrering af aktivitet og måned/år */
+.calendarWrapper h2,
+.calendarWrapper h3 {
+    text-align: center;
+    margin: 5px 0;
+}
+
+/* Juster knapper i h3 (månedsskifte) */
+.calendarWrapper h3 button {
+    margin: 0 10px;
+}

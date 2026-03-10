@@ -1,24 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>JEMS Adventure Park</title>
-    <link rel="stylesheet" href="css/index.css">
+    <meta charset="UTF-8">  
+    <title>Adventure App</title>
+  <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/activityCalenders.css">
 </head>
 <body>
 
 <header>
-    <h1>JEMS Adventure Park</h1>
-
-<!--    Tilføjer indkøbskurvikon + counter til header-->
-    <div id="cart-icon">
-        🛒 <span id="cart-count">0</span>
-    </div>
+    <nav>
+        <span class="logo">JEMS Adventure</span>
+        <ul class="nav-list">
+            <li class="nav-item dropdown-parent">
+                <a href="#" id="aktiviteter-btn">Aktiviteter ▾</a>
+                <ul class="dropdown" id="activity-dropdown"></ul>
+            </li>
+            <li class="nav-item"><a href="#">Firmapakker</a></li>
+            <li class="nav-item cart">
+                <a href="#" id="cart-icon">
+                    🛒 <span id="cart-count">0</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
 </header>
 
 <div class="content"></div>
 
 <script src="js/cart.js"></script>
-
+<script src="js/allActivities.js"></script>
+<script src="js/map.js"></script>
+<script src="js/activityCalenders.js"></script>
 </body>
 </html>
