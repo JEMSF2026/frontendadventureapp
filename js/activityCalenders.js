@@ -6,8 +6,9 @@ let currentYear;
 let currentActivityId;
 let activities = [];
 let dropdownWrapper;
+let selectedTimeslot = null;
 
-// Hent og opret dropdown med aktiviteter
+// Hent aktiviteter
 async function loadActivities() {
     const response = await fetch(`${backendUrl}/activities`);
     activities = await response.json();
@@ -41,12 +42,11 @@ async function loadActivities() {
     currentActivityId = activities[0].id;
 }
 
-// Hent timeslots for aktivitet
+// Hent timeslots
 async function loadTimeslots(activityId, month, year) {
     const response = await fetch(`${backendUrl}/timeslots/${activityId}`);
     let timeslots = await response.json();
 
-    // Filtrer kun timeslots for den valgte måned
     timeslots = timeslots.filter(t => {
         const d = new Date(t.dayOfActivity);
         return d.getFullYear() === year && d.getMonth() === month;
@@ -60,6 +60,8 @@ async function loadTimeslots(activityId, month, year) {
 
 // Byg kalender
 function buildCalendar(timeslots, month, year, activityId, activityName) {
+    selectedTimeslot = null;
+
     const monthNames = [
         "Januar","Februar","Marts","April","Maj","Juni",
         "Juli","August","September","Oktober","November","December"
@@ -71,7 +73,6 @@ function buildCalendar(timeslots, month, year, activityId, activityName) {
     startDay = startDay === 0 ? 6 : startDay - 1;
     const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-    // Gruppér timeslots efter dato
     const slotsByDate = {};
     timeslots.forEach(t => {
         const dateObj = new Date(t.dayOfActivity);
@@ -101,7 +102,6 @@ function buildCalendar(timeslots, month, year, activityId, activityName) {
         for (let j = 0; j < 7; j++) {
             const cellIndex = i * 7 + j;
             if (cellIndex < startDay || day > daysInMonth) {
-                // Celler udenfor måneden
                 calendarHTML += `<td class="empty"></td>`;
             } else {
                 const dateString = `${year}-${String(month+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
@@ -149,6 +149,7 @@ function buildCalendar(timeslots, month, year, activityId, activityName) {
                 <tr><td colspan="2">Vælg en dag</td></tr>
             </tbody>
         </table>
+        <button id="addToCartBtn">Tilføj til kurv</button>
     </div>
     `;
 
@@ -160,19 +161,17 @@ function buildCalendar(timeslots, month, year, activityId, activityName) {
     calendarWrapper.innerHTML = calendarHTML;
     content.appendChild(calendarWrapper);
 
-    // Klik-event kun på dage, der kan vælges
     let selectedCell = null;
+
     calendarWrapper.querySelectorAll(".clickable").forEach(cell => {
         cell.addEventListener("click", () => {
             const date = cell.dataset.date;
 
-            // Fjern tidligere valg
             if (selectedCell) {
                 selectedCell.classList.remove("selected");
                 selectedCell.classList.remove("selectedPartial");
             }
 
-            // Marker den nye celle
             if (cell.classList.contains("partiallyReserved")) {
                 cell.classList.add("selectedPartial");
             } else {
@@ -184,7 +183,6 @@ function buildCalendar(timeslots, month, year, activityId, activityName) {
         });
     });
 
-    // Måned navigation
     calendarWrapper.querySelector("#prevMonth").addEventListener("click", () => {
         let newMonth = month - 1;
         let newYear = year;
@@ -200,17 +198,21 @@ function buildCalendar(timeslots, month, year, activityId, activityName) {
         currentMonth = newMonth; currentYear = newYear;
         loadTimeslots(currentActivityId, newMonth, newYear);
     });
+
+    calendarWrapper.querySelector("#addToCartBtn").addEventListener("click", addToCart);
 }
 
-// Formater tid til 00:00
+// Format tid
 function formatTime(dateTimeString){
     const d = new Date(dateTimeString);
     return `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
 }
 
-// Vis timeslots i tids tabellen med korrekt farvekodning
+// Vis tider
 function showTimes(timeslots){
+    selectedTimeslot = null;
     const tbody = document.querySelector("#timeTable tbody");
+
     if(!timeslots || timeslots.length === 0){
         tbody.innerHTML = `<tr><td colspan="2">Ingen tider</td></tr>`;
         return;
@@ -219,24 +221,57 @@ function showTimes(timeslots){
     timeslots.sort((a,b)=> new Date(a.startTime) - new Date(b.startTime));
 
     tbody.innerHTML = timeslots.map(t => {
-        let cls = "timeAvailable"; // grøn
         if(t.reservation){
-            cls = "timeReserved"; // rød
+            return `<tr class="timeReserved"><td>${formatTime(t.startTime)}</td><td>${formatTime(t.endTime)}</td></tr>`;
         }
-        return `
-        <tr>
-            <td class="${cls}">${formatTime(t.startTime)}</td>
-            <td class="${cls}">${formatTime(t.endTime)}</td>
-        </tr>
-        `;
+        return `<tr class="timeAvailable clickableTime" data-id="${t.id}"><td>${formatTime(t.startTime)}</td><td>${formatTime(t.endTime)}</td></tr>`;
     }).join("");
+
+    document.querySelectorAll(".clickableTime").forEach(row => {
+        row.addEventListener("click", () => {
+            document.querySelectorAll(".clickableTime").forEach(r => r.classList.remove("selectedTime"));
+            row.classList.add("selectedTime");
+            const id = Number(row.dataset.id);
+            selectedTimeslot = timeslots.find(t => Number(t.id) === id);
+        });
+    });
+}
+
+// Tilføj til kurv
+function addToCart(){
+    if(!selectedTimeslot){
+        alert("Du har ikke valgt en tid");
+        return;
+    }
+
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+    const exists = cart.some(item => Number(item.id) === Number(selectedTimeslot.id));
+    if(exists){
+        alert("Dette tidspunkt er allerede i kurven");
+        return;
+    }
+
+    cart.push({
+        id: selectedTimeslot.id,
+        activity: {
+            id: selectedTimeslot.activity.id,
+            name: selectedTimeslot.activity.name,
+            price: selectedTimeslot.activity.price
+        },
+        dayOfActivity: selectedTimeslot.dayOfActivity,
+        startTime: selectedTimeslot.startTime,
+        endTime: selectedTimeslot.endTime
+    });
+
+    localStorage.setItem("cart", JSON.stringify(cart));
+    alert("Tidspunkt tilføjet til kurv");
+
+    selectedTimeslot = null;
+    document.querySelectorAll(".selectedTime").forEach(el => el.classList.remove("selectedTime"));
 }
 
 // Initialiser kalender
 const today = new Date();
 currentMonth = today.getMonth();
 currentYear = today.getFullYear();
-
-loadActivities().then(() => {
-    loadTimeslots(currentActivityId, currentMonth, currentYear);
-});
+loadActivities().then(() => loadTimeslots(currentActivityId, currentMonth, currentYear));
