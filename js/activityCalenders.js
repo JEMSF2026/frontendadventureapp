@@ -57,10 +57,9 @@ async function loadTimeslots(activityId, month, year) {
     buildCalendar(timeslots, month, year, activityId, activityName);
 }
 
-// Byg kalender med info-boks
+// Byg kalender med info-boks og side-by-side layout
 function buildCalendar(timeslots, month, year, activityId, activityName) {
     selectedTimeslot = null;
-
     const selectedActivity = activities.find(a => a.id === activityId);
 
     const monthNames = [
@@ -85,13 +84,10 @@ function buildCalendar(timeslots, month, year, activityId, activityName) {
     const oldCalendar = content.querySelector(".calendarWrapper");
     if (oldCalendar) oldCalendar.remove();
 
-    // Wrapper med flex
     const calendarWrapper = document.createElement("div");
     calendarWrapper.classList.add("calendarWrapper");
 
-    // -----------------------------
-    // Info-boks til venstre
-    // -----------------------------
+    // Info-boks
     const infoBox = document.createElement("div");
     infoBox.classList.add("infoBox");
     infoBox.innerHTML = `
@@ -102,11 +98,13 @@ function buildCalendar(timeslots, month, year, activityId, activityName) {
         <p>Pris: ${selectedActivity.price} kr.</p>
     `;
 
-    // -----------------------------
-    // Kalender og tidstabel til højre
-    // -----------------------------
+    // Container for kalender + tidstabel
+    const calendarDiv = document.createElement("div");
+    calendarDiv.classList.add("calendarAndTimes");
+
+    // Kalender HTML
     let calendarHTML = `
-    <div>
+    <div class="calendarContainer">
         <h3>
             <button id="prevMonth">◀</button>
             ${monthNames[month]} ${year}
@@ -160,7 +158,9 @@ function buildCalendar(timeslots, month, year, activityId, activityName) {
     calendarHTML += `
             </tbody>
         </table>
+    </div>
 
+    <div class="timeContainer">
         <h3>Tidspunkter</h3>
         <table id="timeTable">
             <thead>
@@ -174,11 +174,9 @@ function buildCalendar(timeslots, month, year, activityId, activityName) {
     </div>
     `;
 
-    calendarWrapper.appendChild(infoBox);
-    const calendarDiv = document.createElement("div");
     calendarDiv.innerHTML = calendarHTML;
+    calendarWrapper.appendChild(infoBox);
     calendarWrapper.appendChild(calendarDiv);
-
     content.appendChild(calendarWrapper);
 
     // -----------------------------
