@@ -194,9 +194,9 @@ function buildMap() {
             blob.setAttribute("opacity", "0.88");
         });
 
-        // Klik: naviger til aktivitetens side
+        // Klik: naviger til aktivitetens kalender
         g.addEventListener("click", () => {
-            window.location.href = "/activities/" + activity.id;
+            window.location.href = "?activityId=" + activity.id;
         });
 
         g.append(blob, emoji, label);
@@ -218,5 +218,24 @@ function buildMap() {
     content.appendChild(svg);
 }
 
-// Vis kortet når siden er loaded
-buildMap();
+// Byg kun kortet hvis ingen aktivitet er valgt via URL
+const mapParams = new URLSearchParams(window.location.search);
+if (!mapParams.get("activityId")) {
+    fetch("http://localhost:8080/activities")
+        .then(response => response.json())
+        .then(activities => {
+            activities.forEach(backendActivity => {
+                const match = mapActivities.find(
+                    a => a.name.toLowerCase() === backendActivity.name.toLowerCase()
+                );
+                if (match) {
+                    match.id = backendActivity.id;
+                }
+            });
+            buildMap();
+        })
+        .catch(error => {
+            console.error("Kunne ikke hente aktiviteter:", error);
+            buildMap();
+        });
+}

@@ -31,9 +31,7 @@ fetch("http://localhost:8080/activities")
             const li = document.createElement("li");
             const a = document.createElement("a");
             a.textContent = activity.name;
-
-            // Sæt linket til aktivitetens egen side baseret på dens id
-            a.href = "/activities/" + activity.id;
+            a.href = "?activityId=" + activity.id;
 
             li.appendChild(a);
             dropdown.appendChild(li);

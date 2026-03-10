@@ -1,12 +1,11 @@
-const content = document.querySelector(".content");
-
 function renderCart() {
-
+    const content = document.querySelector(".content");
     content.innerHTML = "";
 
     const main = document.createElement("main");
     const section = document.createElement("section");
     section.id = "cart-view";
+    section.style.display = "block";
 
     const cartLayout = document.createElement("div");
     cartLayout.className = "cart-layout";
@@ -77,7 +76,7 @@ function renderCart() {
 
     main.appendChild(section);
 
-    content.appendChild(main);
+    document.querySelector(".content").appendChild(main);
 
     displayCart();
 }
@@ -98,6 +97,21 @@ function openCart(){
 
     displayCart();
 }
+function formatTime(dateTimeString) {
+    const d = new Date(dateTimeString);
+    return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+}
+
+function formatDate(dateString) {
+    const d = new Date(dateString);
+    return `${String(d.getDate()).padStart(2, "0")}-${String(d.getMonth() + 1).padStart(2, "0")}-${d.getFullYear()}`;
+}
+
+function updateCartCount() {
+    const cart = getCart();
+    document.getElementById("cart-count").textContent = cart.length;
+}
+
 //Viser aktiviteter i indkøbskurven
 function displayCart() {
     const cart = getCart();
@@ -113,24 +127,25 @@ function displayCart() {
 
     cart.forEach(item => {
         const div = document.createElement("div");
-
         div.className = "cart-item";
 
         div.innerHTML = `
-    <p>Aktivitet: ${item.activity}</p>
-    <p>Dato: ${item.date}</p>
-    <p>Tidsrum: ${item.startTime} - ${item.endTime}</p>
-    <p>Pris: ${item.price} DKK</p>
+    <p>Aktivitet: ${item.activity.name}</p>
+    <p>Dato: ${formatDate(item.dayOfActivity)}</p>
+    <p>Tidsrum: ${formatTime(item.startTime)} - ${formatTime(item.endTime)}</p>
+    <p>Pris: ${item.activity.price} DKK</p>
 `;
 
-        container.appendChild(div)
-
-        totalPrice += Number(item.price);
+        container.appendChild(div);
+        totalPrice += Number(item.activity.price);
     });
 
     document.getElementById("total-price").innerText = totalPrice + " DKK";
 }
 
-document.getElementById("cart-icon").addEventListener("click", openCart);
+document.getElementById("cart-icon").addEventListener("click", (e) => {
+    e.preventDefault();
+    renderCart();
+});
 
-renderCart();
+updateCartCount();
