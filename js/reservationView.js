@@ -2,7 +2,7 @@ export function renderReservation(reservation, containerId) {
 
     const content = document.getElementById(".content");
     container.innerHTML = ""; // clear previous content
-    const backendUrl = http://localhost:8080;
+    const backendUrl = "http://localhost:8080";
 
     const reservationDiv = document.createElement("div");
 
