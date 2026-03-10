@@ -1,4 +1,3 @@
-const content = document.querySelector(".content");
 const backendUrl = "http://localhost:8080";
 
 let currentMonth;
@@ -42,7 +41,7 @@ async function loadActivities() {
     currentActivityId = activities[0].id;
 }
 
-// Hent timeslots
+// Hent timeslots og kalender
 async function loadTimeslots(activityId, month, year) {
     const response = await fetch(`${backendUrl}/timeslots/${activityId}`);
     let timeslots = await response.json();
@@ -264,14 +263,23 @@ function addToCart(){
     });
 
     localStorage.setItem("cart", JSON.stringify(cart));
+    updateCartCount();
     alert("Tidspunkt tilføjet til kurv");
 
     selectedTimeslot = null;
     document.querySelectorAll(".selectedTime").forEach(el => el.classList.remove("selectedTime"));
 }
 
-// Initialiser kalender
-const today = new Date();
-currentMonth = today.getMonth();
-currentYear = today.getFullYear();
-loadActivities().then(() => loadTimeslots(currentActivityId, currentMonth, currentYear));
+// Initialiser kalender — kun hvis en aktivitet er valgt via URL
+const calParams = new URLSearchParams(window.location.search);
+const preselectedActivityId = calParams.get("activityId") ? parseInt(calParams.get("activityId")) : null;
+
+if (preselectedActivityId) {
+    const today = new Date();
+    currentMonth = today.getMonth();
+    currentYear = today.getFullYear();
+    loadActivities().then(() => {
+        currentActivityId = preselectedActivityId;
+        loadTimeslots(preselectedActivityId, currentMonth, currentYear);
+    });
+}
