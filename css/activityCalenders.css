@@ -97,8 +97,26 @@
 }
 
 /* ------------------------ */
+/* Info-boks styling        */
+/* ------------------------ */
+.infoBox {
+    border: 1px solid #ccc;
+    padding: 15px;
+    width: 250px;
+    background-color: #c8e6f0; /* lys blå-grøn baggrund */
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* ------------------------ */
 /* Generelt layout          */
 /* ------------------------ */
+.calendarWrapper {
+    display: flex;
+    gap: 40px;
+    align-items: flex-start;
+}
+
 .content > div {
     display: flex;
     gap: 40px;

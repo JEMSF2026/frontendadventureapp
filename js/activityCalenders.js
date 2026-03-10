@@ -57,9 +57,11 @@ async function loadTimeslots(activityId, month, year) {
     buildCalendar(timeslots, month, year, activityId, activityName);
 }
 
-// Byg kalender
+// Byg kalender med info-boks
 function buildCalendar(timeslots, month, year, activityId, activityName) {
     selectedTimeslot = null;
+
+    const selectedActivity = activities.find(a => a.id === activityId);
 
     const monthNames = [
         "Januar","Februar","Marts","April","Maj","Juni",
@@ -80,9 +82,31 @@ function buildCalendar(timeslots, month, year, activityId, activityName) {
         slotsByDate[dateStr].push(t);
     });
 
+    const oldCalendar = content.querySelector(".calendarWrapper");
+    if (oldCalendar) oldCalendar.remove();
+
+    // Wrapper med flex
+    const calendarWrapper = document.createElement("div");
+    calendarWrapper.classList.add("calendarWrapper");
+
+    // -----------------------------
+    // Info-boks til venstre
+    // -----------------------------
+    const infoBox = document.createElement("div");
+    infoBox.classList.add("infoBox");
+    infoBox.innerHTML = `
+        <h2>${selectedActivity.name}</h2>
+        <p>${selectedActivity.description || "Ingen beskrivelse"}</p>
+        <p>Aldersgrænse: ${selectedActivity.minimumAge}</p>
+        <p>Der er plads til ${selectedActivity.maxParticipants} deltagere</p>
+        <p>Pris: ${selectedActivity.price} kr.</p>
+    `;
+
+    // -----------------------------
+    // Kalender og tidstabel til højre
+    // -----------------------------
     let calendarHTML = `
     <div>
-        <h2>${activityName}</h2>
         <h3>
             <button id="prevMonth">◀</button>
             ${monthNames[month]} ${year}
@@ -136,9 +160,7 @@ function buildCalendar(timeslots, month, year, activityId, activityName) {
     calendarHTML += `
             </tbody>
         </table>
-    </div>
 
-    <div>
         <h3>Tidspunkter</h3>
         <table id="timeTable">
             <thead>
@@ -152,16 +174,17 @@ function buildCalendar(timeslots, month, year, activityId, activityName) {
     </div>
     `;
 
-    const oldCalendar = content.querySelector(".calendarWrapper");
-    if (oldCalendar) oldCalendar.remove();
+    calendarWrapper.appendChild(infoBox);
+    const calendarDiv = document.createElement("div");
+    calendarDiv.innerHTML = calendarHTML;
+    calendarWrapper.appendChild(calendarDiv);
 
-    const calendarWrapper = document.createElement("div");
-    calendarWrapper.classList.add("calendarWrapper");
-    calendarWrapper.innerHTML = calendarHTML;
     content.appendChild(calendarWrapper);
 
+    // -----------------------------
+    // Event listeners for kalender
+    // -----------------------------
     let selectedCell = null;
-
     calendarWrapper.querySelectorAll(".clickable").forEach(cell => {
         cell.addEventListener("click", () => {
             const date = cell.dataset.date;
