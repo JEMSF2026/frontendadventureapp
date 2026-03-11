@@ -6,12 +6,10 @@
  *   2. Navigation i dashboardet: skifter indhold i .content-divven mellem de to sektioner
  *
  * Afhængigheder (indlæses i employee.html før denne fil):
- *   - equipmentOverview.js  → eksponerer createLayout() og loadActivities()
+ *   - equipmentOverview.js  → eksponerer createLayout(), loadActivities() og apiBaseUrl
  *   - activityManagement.js → eksponerer showActivityManagement()
  *
  */
-
-const apiBaseUrl = "http://localhost:8080";
 
 /*
  * Login-handler
