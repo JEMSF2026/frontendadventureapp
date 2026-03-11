@@ -186,5 +186,3 @@ async function bookActivity(){
 }
 
 document.getElementById("cart-icon").addEventListener("click", openCart);
-
-renderCart();
