@@ -8,30 +8,56 @@ document.addEventListener("DOMContentLoaded", () => {
 function createLayout() {
     const content = document.querySelector(".content");
 
-
     content.innerHTML = `
     <h1>Udstyrsoversigt</h1>
 
-    <label for="activityDropdown">Vælg aktivitet:</label>
-    <select id="activityDropdown"></select>
+    <div id="tableView">
 
-    <table id="equipmentTable">
-        <thead>
-        <tr>
-            <th>Navn</th>
-            <th>Status</th>
-            <th>Beskrivelse</th>
-        </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
-        `;
+        <label for="activityDropdown">Vælg aktivitet:</label>
+        <select id="activityDropdown"></select>
 
-    document
-        .getElementById("activityDropdown")
-        .addEventListener("change", loadEquipment);
+        <button id="addEquipmentBtn">Tilføj udstyr</button>
 
+        <table id="equipmentTable">
+            <thead>
+            <tr>
+                <th>Navn</th>
+                <th>Status</th>
+                <th>Beskrivelse</th>
+            </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
 
+    </div>
+
+    <div id="formView" style="display:none">
+
+        <h2>Tilføj nyt udstyr</h2>
+
+        <label>Navn:</label>
+        <input type="text" id="equipmentName">
+
+        <label>Aktivitet:</label>
+        <select id="activitySelect"></select>
+
+        <label>Status:</label>
+        <select id="stateSelect"></select>
+
+        <label>Beskrivelse:</label>
+        <input type="text" id="equipmentDescription">
+
+        <br><br>
+        <button id="saveEquipmentBtn">Gem</button>
+        <button id="cancelBtn">Annuller</button>
+
+    </div>
+    `;
+
+    document.getElementById("activityDropdown").addEventListener("change", loadEquipment);
+    document.getElementById("addEquipmentBtn").addEventListener("click", showForm);
+    document.getElementById("saveEquipmentBtn").addEventListener("click", saveEquipment);
+    document.getElementById("cancelBtn").addEventListener("click", showTable);
 }
 
 async function loadActivities() {
@@ -40,6 +66,7 @@ async function loadActivities() {
         const activities = await response.json();
 
         const dropdown = document.getElementById("activityDropdown");
+        dropdown.innerHTML = "";
 
         activities.forEach(activity => {
             const option = document.createElement("option");
@@ -48,7 +75,6 @@ async function loadActivities() {
             dropdown.appendChild(option);
         });
 
-        // Auto-load first activity
         if (activities.length > 0) {
             dropdown.value = activities[0].id;
             loadEquipment();
@@ -71,7 +97,6 @@ async function loadEquipment() {
         tableBody.innerHTML = "";
 
         equipmentList.forEach(eq => {
-
             const status = eq.equipmentState ? eq.equipmentState.name : "Ukendt";
             let statusClass = "";
 
@@ -80,17 +105,103 @@ async function loadEquipment() {
             if (status === "Out of Order") statusClass = "status-red";
 
             const row = document.createElement("tr");
-
             row.innerHTML = `
-        <td>${eq.name}</td>
-        <td class="${statusClass}">${status}</td>
-        <td>${eq.description ? eq.description : ""}</td>
+                <td>${eq.name}</td>
+                <td class="${statusClass}">${status}</td>
+                <td>${eq.description ? eq.description : ""}</td>
             `;
-
             tableBody.appendChild(row);
         });
 
     } catch (error) {
         console.error("Error loading equipment:", error);
+    }
+}
+
+// ----- SHOW FORM -----
+// Vi venter på at dropdowns er fyldt, før vi viser formen
+async function showForm() {
+    await loadActivitiesForForm();
+    await loadEquipmentStates();
+
+    document.getElementById("tableView").style.display = "none";
+    document.getElementById("formView").style.display = "block";
+}
+
+function showTable() {
+    document.getElementById("formView").style.display = "none";
+    document.getElementById("tableView").style.display = "block";
+}
+
+async function loadActivitiesForForm() {
+    const response = await fetch(`${apiBaseUrl}/activities`);
+    const activities = await response.json();
+
+    const dropdown = document.getElementById("activitySelect");
+    dropdown.innerHTML = "";
+
+    activities.forEach(activity => {
+        const option = document.createElement("option");
+        option.value = activity.id;
+        option.textContent = activity.name;
+        dropdown.appendChild(option);
+    });
+}
+
+async function loadEquipmentStates() {
+    const response = await fetch(`${apiBaseUrl}/equipmentStates`);
+    const states = await response.json();
+
+    const dropdown = document.getElementById("stateSelect");
+    dropdown.innerHTML = "";
+
+    states.forEach(state => {
+        const option = document.createElement("option");
+        option.value = state.id;
+        option.textContent = state.name;
+        dropdown.appendChild(option);
+    });
+}
+
+// ----- SAVE EQUIPMENT -----
+async function saveEquipment() {
+    const name = document.getElementById("equipmentName").value;
+    const description = document.getElementById("equipmentDescription").value;
+    const activityId = document.getElementById("activitySelect").value;
+    const stateId = document.getElementById("stateSelect").value;
+
+    if (!name || !activityId || !stateId) {
+        alert("Udfyld alle felter!");
+        return;
+    }
+
+    const equipment = {
+        name,
+        description,
+        activity: { id: parseInt(activityId) },
+        equipmentState: { id: parseInt(stateId) }
+    };
+
+    console.log("Saving equipment:", equipment); // Log til debug
+
+    try {
+        const response = await fetch(`${apiBaseUrl}/equipment/save`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(equipment)
+        });
+
+        if (!response.ok) {
+            const text = await response.text();
+            throw new Error(text || "Fejl ved gem af udstyr");
+        }
+
+        alert("Udstyr gemt!");
+        showTable();
+        loadEquipment();
+
+    } catch (error) {
+        console.error("Error saving equipment:", error);
+        alert("Kunne ikke gemme udstyr: " + error.message);
     }
 }
