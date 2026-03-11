@@ -9,9 +9,9 @@ function createLayout() {
     const content = document.querySelector(".content");
 
     content.innerHTML = `
-    <h1>Udstyrsoversigt</h1>
-
     <div id="tableView">
+
+        <h1>Udstyrsoversigt</h1>
 
         <label for="activityDropdown">Vælg aktivitet:</label>
         <select id="activityDropdown"></select>
@@ -31,25 +31,26 @@ function createLayout() {
 
     </div>
 
-    <div id="formView" style="display:none">
+    <div id="formView" class="form-container" style="display:none">
 
         <h2>Tilføj nyt udstyr</h2>
 
-        <label>Navn:</label>
+        <label>Navn</label>
         <input type="text" id="equipmentName">
 
-        <label>Aktivitet:</label>
+        <label>Aktivitet</label>
         <select id="activitySelect"></select>
 
-        <label>Status:</label>
+        <label>Status</label>
         <select id="stateSelect"></select>
 
-        <label>Beskrivelse:</label>
+        <label>Beskrivelse</label>
         <input type="text" id="equipmentDescription">
 
-        <br><br>
-        <button id="saveEquipmentBtn">Gem</button>
-        <button id="cancelBtn">Annuller</button>
+        <div class="button-group">
+            <button id="saveEquipmentBtn">Gem</button>
+            <button id="cancelBtn">Annuller</button>
+        </div>
 
     </div>
     `;
@@ -118,14 +119,12 @@ async function loadEquipment() {
     }
 }
 
-// ----- SHOW FORM -----
-// Vi venter på at dropdowns er fyldt, før vi viser formen
 async function showForm() {
     await loadActivitiesForForm();
     await loadEquipmentStates();
 
     document.getElementById("tableView").style.display = "none";
-    document.getElementById("formView").style.display = "block";
+    document.getElementById("formView").style.display = "flex";
 }
 
 function showTable() {
@@ -163,7 +162,6 @@ async function loadEquipmentStates() {
     });
 }
 
-// ----- SAVE EQUIPMENT -----
 async function saveEquipment() {
     const name = document.getElementById("equipmentName").value;
     const description = document.getElementById("equipmentDescription").value;
@@ -181,8 +179,6 @@ async function saveEquipment() {
         activity: { id: parseInt(activityId) },
         equipmentState: { id: parseInt(stateId) }
     };
-
-    console.log("Saving equipment:", equipment); // Log til debug
 
     try {
         const response = await fetch(`${apiBaseUrl}/equipment/save`, {
