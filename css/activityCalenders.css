@@ -11,7 +11,6 @@
     text-align: center;
     width: 40px;
     height: 40px;
-    /* default cursor, men klikbare dage overskriver */
 }
 
 /* Tomme celler før/efter måned */
@@ -21,42 +20,42 @@
 
 /* Klikbare dage */
 .clickable, .allAvailable, .partiallyReserved, .selected, .selectedPartial {
-    cursor: pointer !important; /* tving pointer cursor */
+    cursor: pointer !important;
 }
 
 /* Alle tider ledige (grøn) */
 .allAvailable {
-    background-color: #c8e6c9; /* lys grøn */
+    background-color: #c8e6c9;
 }
 
 .allAvailable:hover {
-    background-color: #a5d6a7; /* mørkere grøn ved hover */
+    background-color: #a5d6a7;
 }
 
 /* Valgt dag (grøn) */
 .selected {
-    background-color: #81c784 !important; /* mørkere grøn */
+    background-color: #81c784 !important;
 }
 
 /* Alle tider reserveret */
 .reserved {
-    background-color: #e57373; /* rød */
+    background-color: #e57373;
     color: white;
     cursor: not-allowed;
 }
 
 /* Nogle tider reserveret (gul) */
 .partiallyReserved {
-    background-color: #fff176; /* lys gul */
+    background-color: #fff176;
 }
 
 .partiallyReserved:hover {
-    background-color: #fdd835; /* mørkere gul ved hover */
+    background-color: #fdd835;
 }
 
 /* Nogle tider reserveret, valgt */
 .selectedPartial {
-    background-color: #fbc02d !important; /* mørkere gul */
+    background-color: #fbc02d !important;
 }
 
 /* ------------------------ */
@@ -74,9 +73,8 @@
     text-align: center;
 }
 
-/* Ledig timeslot */
 .timeAvailable {
-    background-color: #c8e6c9; /* lys grøn */
+    background-color: #c8e6c9;
     cursor: pointer;
 }
 
@@ -84,16 +82,58 @@
     background-color: #a5d6a7;
 }
 
-/* Reserveret timeslot */
 .timeReserved {
-    background-color: #e57373; /* rød */
+    background-color: #e57373;
     color: white;
 }
 
-/* Valgt tid */
 .selectedTime {
     background-color: #81c784 !important;
     color: white;
+}
+
+/* ------------------------ */
+/* Info-boks styling        */
+/* ------------------------ */
+.infoBox {
+    border: 1px solid #ccc;
+    padding: 15px;
+    width: 250px;
+    background-color: #c8e6f0; /* lys blå-grøn */
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.infoBox p {
+    margin: 32px 0 0 0;  /* 4 gange mere afstand mellem linjer */
+    line-height: 1.5;
+}
+
+.infoBox h2 {
+    margin-top: 0;
+}
+
+/* ------------------------ */
+/* Kalender + tidstabel side by side */
+/* ------------------------ */
+.calendarWrapper {
+    display: flex;
+    gap: 40px;
+    align-items: flex-start;
+}
+
+.calendarAndTimes {
+    display: flex;
+    gap: 40px;
+    align-items: flex-start;
+}
+
+.calendarContainer {
+    flex: 1;
+}
+
+.timeContainer {
+    width: 200px;
 }
 
 /* ------------------------ */
@@ -103,7 +143,7 @@
     display: flex;
     gap: 40px;
     align-items: flex-start;
-    flex-wrap: wrap; /* for at undgå at "Tilføj til kurv" ryger af sted */
+    flex-wrap: wrap;
 }
 
 /* Frem/tilbage knapper */
