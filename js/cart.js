@@ -1,5 +1,3 @@
-const content = document.querySelector(".content");
-
 function renderCart() {
     const content = document.querySelector(".content");
     content.innerHTML = "";

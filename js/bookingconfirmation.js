@@ -1,6 +1,6 @@
-const content = document.querySelector(".content");
-
 export function renderConfirmation(bookingNumber, customer, cart){
+
+    const content = document.querySelector(".content");
 
     content.innerHTML = "";
 
