@@ -219,7 +219,6 @@ async function loadTimeslots(activityId) {
                         <th>Dato</th>
                         <th>Start</th>
                         <th>Slut</th>
-                        <th>Deltagere</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -228,7 +227,6 @@ async function loadTimeslots(activityId) {
                             <td>${ts.dayOfActivity}</td>
                             <td>${formatTime(ts.startTime)}</td>
                             <td>${formatTime(ts.endTime)}</td>
-                            <td>${ts.participants}</td>
                         </tr>
                     `).join("")}
                 </tbody>
@@ -273,10 +271,6 @@ function showTimeslotForm(activityId) {
                     <label for="endTime">Sluttidspunkt</label>
                     <input type="datetime-local" id="endTime" required>
                 </div>
-                <div class="form-group">
-                    <label for="participants">Antal deltagere</label>
-                    <input type="number" id="participants" min="1" required>
-                </div>
                 <div id="timeslotError" class="form-error hidden"></div>
                 <div id="timeslotSuccess" class="form-success hidden"></div>
                 <button type="submit" class="submit-btn">Gem tidsrum</button>
@@ -306,7 +300,7 @@ async function submitTimeslot(e, activityId) {
         dayOfActivity: document.getElementById("dayOfActivity").value,
         startTime: document.getElementById("startTime").value,
         endTime: document.getElementById("endTime").value,
-        participants: parseInt(document.getElementById("participants").value),
+        participants: 0,
         activity: { id: activityId },
         employee: { id: 1 }
     };
