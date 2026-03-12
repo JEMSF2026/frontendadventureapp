@@ -1,0 +1,136 @@
+.hidden {
+    display: none !important;
+}
+
+.nav-portal-label {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.nav-active {
+    background-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+.nav-logout {
+    color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.nav-logout:hover {
+    color: #ffffff !important;
+}
+
+/* Login layout */
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 64px);
+    background-color: #f0f2f5;
+}
+
+.login-card {
+    background: white;
+    border-radius: 12px;
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.10);
+}
+
+.login-card h2 {
+    color: #1a1a2e;
+    margin-bottom: 0.4rem;
+    font-size: 1.6rem;
+}
+
+.login-subtitle {
+    color: #888;
+    font-size: 0.9rem;
+    margin-bottom: 1.8rem;
+}
+
+.form-group {
+    margin-bottom: 1.2rem;
+}
+
+.form-group label {
+    display: block;
+    color: #333;
+    font-size: 0.9rem;
+    margin-bottom: 0.4rem;
+    font-weight: bold;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.65rem 0.9rem;
+    border: 1.5px solid #ddd;
+    border-radius: 6px;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.form-group input:focus {
+    border-color: #1a1a2e;
+}
+
+.login-btn {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: #1a1a2e;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-top: 0.5rem;
+    transition: background-color 0.2s;
+}
+
+.login-btn:hover {
+    background-color: #2d2d50;
+}
+
+.login-error {
+    color: #e63946;
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+}
+
+.back-link {
+    display: block;
+    text-align: center;
+    margin-top: 1.2rem;
+    color: #888;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.back-link:hover {
+    color: #1a1a2e;
+}
+
+/* Aktivitetsstyring placeholder */
+.placeholder-section {
+    padding-top: 1rem;
+}
+
+.placeholder-section h1 {
+    margin-bottom: 1rem;
+    color: #1a1a2e;
+}
+
+.placeholder-text {
+    color: #555;
+    margin-bottom: 0.5rem;
+}
+
+.placeholder-list {
+    margin-top: 0.5rem;
+    margin-left: 1.5rem;
+    color: #555;
+    line-height: 2;
+}
