@@ -138,21 +138,6 @@ function getCart(){
 
     return JSON.parse(cart)
 }
-//Åbner indkøbskurv til single page view
-function openCart(){
-    document.getElementById("cart-view").style.display = "block";
-
-    displayCart();
-}
-function formatTime(dateTimeString) {
-    const d = new Date(dateTimeString);
-    return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
-}
-
-function formatDate(dateString) {
-    const d = new Date(dateString);
-    return `${String(d.getDate()).padStart(2, "0")}-${String(d.getMonth() + 1).padStart(2, "0")}-${d.getFullYear()}`;
-}
 
 function removeActivityFromCart(index){
     const cart = getCart();
