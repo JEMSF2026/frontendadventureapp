@@ -177,6 +177,8 @@ async function showForm() {
     await loadActivitiesForForm();
     await loadEquipmentStates();
 
+    document.getElementById("equipmentName").value = "";
+    document.getElementById("equipmentDescription").value = "";
     document.getElementById("cancelBtn").textContent = "Annuller";
     document.getElementById("saveEquipmentBtn").textContent = "Gem";
     document.getElementById("formTitle").textContent = "Tilføj nyt udstyr";
