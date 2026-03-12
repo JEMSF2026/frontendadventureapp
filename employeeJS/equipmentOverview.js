@@ -63,7 +63,7 @@ function createLayout() {
 
     <div id="formView" class="form-container" style="display:none">
 
-        <h2>Tilføj nyt udstyr</h2>
+        <h2 id="formTitle">Tilføj nyt udstyr</h2> 
 
         <label>Navn</label>
         <input type="text" id="equipmentName">
@@ -143,7 +143,7 @@ async function loadEquipment() {
     if (!activityId) return;
 
     try {
-        const response = await fetch(`${apiBaseUrl}/equipment/${activityId}`);
+        const response = await fetch(`${apiBaseUrl}/equipments/${activityId}`);
         const equipmentList = await response.json();
 
         const tableBody = document.querySelector("#equipmentTable tbody");
@@ -183,6 +183,7 @@ async function showForm() {
     document.getElementById("tableView").style.display = "none";
     document.getElementById("formView").style.display = "flex";
 }
+
 
 function showTable() {
     document.getElementById("formView").style.display = "none";
@@ -305,6 +306,8 @@ async function editEquipment(equipmentId) {
         // Skift knap tekst og event
         const saveBtn = document.getElementById("saveEquipmentBtn");
         saveBtn.textContent = "Opdatér";
+        const formTitle = document.getElementById("formTitle");
+        formTitle.textContent = "Redigér udstyr";
 
         // Fjern gamle event listeners
         saveBtn.replaceWith(saveBtn.cloneNode(true));
