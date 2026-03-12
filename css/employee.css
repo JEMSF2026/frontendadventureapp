@@ -113,24 +113,76 @@
     color: #1a1a2e;
 }
 
-/* Aktivitetsstyring placeholder */
-.placeholder-section {
+/* Aktivitetsstyring */
+.activity-management-section {
     padding-top: 1rem;
 }
 
-.placeholder-section h1 {
-    margin-bottom: 1rem;
+.activity-management-section h1 {
+    margin-bottom: 1.5rem;
     color: #1a1a2e;
 }
 
-.placeholder-text {
-    color: #555;
+.activity-form-card {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    max-width: 500px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+}
+
+.activity-form-card h2 {
+    color: #1a1a2e;
+    font-size: 1.2rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-group textarea {
+    width: 100%;
+    padding: 0.65rem 0.9rem;
+    border: 1.5px solid #ddd;
+    border-radius: 6px;
+    font-size: 1rem;
+    outline: none;
+    resize: vertical;
+    font-family: inherit;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+
+.form-group textarea:focus {
+    border-color: #1a1a2e;
+}
+
+.form-group input {
+    box-sizing: border-box;
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: #1a1a2e;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-top: 0.5rem;
+    transition: background-color 0.2s;
+}
+
+.submit-btn:hover {
+    background-color: #2d2d50;
+}
+
+.form-error {
+    color: #e63946;
+    font-size: 0.85rem;
     margin-bottom: 0.5rem;
 }
 
-.placeholder-list {
-    margin-top: 0.5rem;
-    margin-left: 1.5rem;
-    color: #555;
-    line-height: 2;
+.form-success {
+    color: #2a9d8f;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
 }
