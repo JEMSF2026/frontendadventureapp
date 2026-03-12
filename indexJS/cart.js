@@ -1,3 +1,6 @@
+import { formatDate, formatTime, updateCartCount } from "./utils.js";
+import { renderConfirmation } from "./bookingconfirmation.js";
+
 function renderCart() {
     const content = document.querySelector(".content");
     content.innerHTML = "";
@@ -32,25 +35,62 @@ function renderCart() {
     const customerTitle = document.createElement("h3");
     customerTitle.textContent = "Kundeinformationer";
 
-    function createInput(labelText, type) {
+    const typeWrapper = document.createElement("div");
+
+    const typeLabel = document.createElement("p");
+    typeLabel.textContent = "Kundetype:";
+
+    const radioContainer = document.createElement("div");
+    radioContainer.className = "customer-type-options";
+
+    const privateLabel = document.createElement("label");
+    const privateRadio = document.createElement("input");
+    privateRadio.type = "radio";
+    privateRadio.name = "customerType";
+    privateRadio.value = "1";
+    privateRadio.checked = true;
+
+    privateLabel.appendChild(privateRadio);
+    privateLabel.appendChild(document.createTextNode("Privat"));
+
+    const companyLabel = document.createElement("label");
+    const companyRadio = document.createElement("input")
+    companyRadio.type = "radio";
+    companyRadio.name = "customerType";
+    companyRadio.value = "2";
+
+    companyLabel.appendChild(companyRadio);
+    companyLabel.appendChild(document.createTextNode("Virksomhed"));
+
+    radioContainer.appendChild(privateLabel);
+    radioContainer.appendChild(companyLabel);
+
+    typeWrapper.appendChild(typeLabel);
+    typeWrapper.appendChild(radioContainer);
+
+    customerBox.appendChild(typeWrapper);
+
+    function createInput(labelText, type, id) {
         const label = document.createElement("label");
         label.textContent = labelText;
 
         const input = document.createElement("input");
         input.type = type;
+        input.id = id;
 
         customerBox.appendChild(label);
         customerBox.appendChild(input);
     }
 
-    createInput("Fornavn:", "text");
-    createInput("Efternavn:", "text");
-    createInput("Email:", "email");
-    createInput("Telefonnummer:", "text");
-    createInput("Antal deltagere:", "number");
+    createInput("Fornavn:", "text", "firstName");
+    createInput("Efternavn:", "text", "lastName");
+    createInput("Email:", "email", "email");
+    createInput("Telefonnummer:", "text", "phoneNumber");
+    createInput("Antal deltagere:", "number", "participants");
+    createInput("Virksomhedsnavn", "text", "companyName");
+    createInput("CVR", "number", "cvr");
 
     customerBox.prepend(customerTitle);
-
     cartLayout.appendChild(cartBox);
     cartLayout.appendChild(customerBox);
 
@@ -71,6 +111,11 @@ function renderCart() {
     checkout.appendChild(label);
     checkout.appendChild(button);
 
+    const errorMessage = document.createElement("p");
+    errorMessage.id = "form-error";
+
+    checkout.appendChild(errorMessage);
+
     section.appendChild(cartLayout);
     section.appendChild(checkout);
 
@@ -79,6 +124,8 @@ function renderCart() {
     document.querySelector(".content").appendChild(main);
 
     displayCart();
+
+    button.addEventListener("click", bookActivity)
 }
 
 //henter indkøbskurv fra LocalStorage, returnere tom liste hvis den er tom.
@@ -168,3 +215,79 @@ document.getElementById("cart-icon").addEventListener("click", (e) => {
 });
 
 updateCartCount();
+
+async function bookActivity(){
+    const type = document.querySelector("input[name='customerType']:checked").value;
+
+    const customer = {
+        firstName: document.getElementById("firstName").value,
+        lastName: document.getElementById("lastName").value,
+        email: document.getElementById("email").value,
+        phoneNumber: document.getElementById("phoneNumber").value,
+        companyName: document.getElementById("companyName").value || null,
+        cvr: document.getElementById("cvr").value ?
+        Number(document.getElementById("cvr").value) : null,
+        customerType: {id: Number(type)}
+    };
+
+    const participants = Number(document.getElementById("participants").value);
+    const cart = getCart();
+
+    const error = document.getElementById("form-error");
+    error.textContent = "";
+
+    if (!customer.firstName || !customer.lastName || !customer.email || !customer.phoneNumber
+    || !participants){
+        error.textContent = "Udfyld venligst alle kundeinformationer";
+
+        return;
+    }
+
+    if (type === "2"){
+        if (!customer.companyName || customer.companyName.trim() === "" ||
+            !customer.cvr){
+            error.textContent = "CVR og Virksomhedsnavn påkrævet for virksomheder";
+            return;
+        }
+    }
+
+    const checkbox = document.querySelector(".checkout input[type='checkbox']");
+    if(!checkbox.checked){
+        error.textContent = "Du skal acceptere betingelserne";
+        return;
+    }
+
+    const reservation = {
+        customer: customer,
+        timeslots: cart.map(item => ({
+            id: item.id,
+            activity: {id: item.activity.id},
+            dayOfActivity: item.dayOfActivity,
+            startTime: item.startTime,
+            endTime: item.endTime,
+            participants : participants
+        }))
+    };
+
+    const response = await fetch("http://localhost:8080/reservation", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(reservation)
+    });
+
+    if (!response.ok){
+        error.textContent = "Bookningen kunne ikke gennemføres. Tjek dine oplsyninger";
+        return;
+    }
+
+    const data = await response.json();
+
+    console.log(data)
+
+    renderConfirmation(data.bookingNumber, customer, cart, data.dateOfReservation);
+
+    localStorage.removeItem("cart");
+    updateCartCount();
+}
