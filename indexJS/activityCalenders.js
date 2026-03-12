@@ -1,3 +1,5 @@
+import { updateCartCount } from "./utils.js";
+
 const backendUrl = "http://localhost:8080";
 
 let currentMonth;

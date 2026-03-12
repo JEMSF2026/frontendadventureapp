@@ -1,10 +1,39 @@
+/*
+ * equipmentOverview.js – Udstyrsoversigt for medarbejderportalen
+ *
+ * Viser en tabel over udstyr filtreret på valgt aktivitet.
+ * Indholdet renderes ind i .content-divven i employee.html.
+ *
+ * Funktioner eksponeret globalt (bruges af employee.js):
+ *   - createLayout()    → bygger HTML-skelettet (dropdown + tabel) i .content
+ *   - loadActivities()  → henter aktiviteter fra backend og fylder dropdown
+ *
+ * Internt kald-flow:
+ *   DOMContentLoaded → createLayout() → loadActivities() → loadEquipment()
+ *   Bruger skifter dropdown              → loadEquipment()
+ *   Bruger klikker "Udstyr" i nav        → createLayout() + loadActivities() (via employee.js)
+ */
+
 const apiBaseUrl = "http://localhost:8080";
 
+/*
+ * Kører automatisk når siden er loadet.
+ * Sætter udstyrsoversigten op som standard-visning i dashboardet.
+ * Bemærk: .content eksisterer i DOM'en selv når #dashboard er skjult,
+ * så denne kørsel sker korrekt i baggrunden mens login-skærmen vises.
+ */
 document.addEventListener("DOMContentLoaded", () => {
     createLayout();
     loadActivities();
 });
 
+/*
+ * createLayout()
+ * Skriver HTML-skelettet for udstyrsoversigten ind i .content.
+ * Tilføjer en change-event listener på dropdown, så udstyr opdateres
+ * automatisk når brugeren vælger en anden aktivitet.
+ * Kaldes også af showEquipment() i employee.js ved nav-skift tilbage til "Udstyr".
+ */
 function createLayout() {
     const content = document.querySelector(".content");
 
@@ -60,8 +89,18 @@ function createLayout() {
     document.getElementById("addEquipmentBtn").addEventListener("click", showForm);
     document.getElementById("saveEquipmentBtn").addEventListener("click", saveEquipment);
     document.getElementById("cancelBtn").addEventListener("click", showTable);
+    document
+        .getElementById("activityDropdown")
+        .addEventListener("change", loadEquipment);
 }
 
+/*
+ * loadActivities()
+ * Henter alle aktiviteter fra GET /activities og fylder dropdown-menuen.
+ * Vælger automatisk den første aktivitet og kalder loadEquipment()
+ * så tabellen ikke er tom ved første visning.
+ * Kaldes også af showEquipment() i employee.js ved nav-skift tilbage til "Udstyr".
+ */
 async function loadActivities() {
     try {
         const response = await fetch(`${apiBaseUrl}/activities`);
@@ -77,6 +116,7 @@ async function loadActivities() {
             dropdown.appendChild(option);
         });
 
+        // Auto-loader første aktivitets udstyr så tabellen ikke er tom ved start
         if (activities.length > 0) {
             dropdown.value = activities[0].id;
             loadEquipment();
@@ -87,6 +127,17 @@ async function loadActivities() {
     }
 }
 
+/*
+ * loadEquipment()
+ * Henter udstyr for den valgte aktivitet fra GET /equipment/{activityId}
+ * og bygger tabel-rækker i #equipmentTable.
+ * Status-farver sættes via CSS-klasser:
+ *   "Active"       → status-green  (grøn)
+ *   "Reparation"   → status-yellow (gul/orange)
+ *   "Out of Order" → status-red    (rød)
+ * Kaldes automatisk ved dropdown-skift (event listener sat i createLayout)
+ * og ved første load via loadActivities().
+ */
 async function loadEquipment() {
     const activityId = document.getElementById("activityDropdown").value;
     if (!activityId) return;
