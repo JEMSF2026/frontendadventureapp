@@ -53,6 +53,7 @@ function createLayout() {
                 <th>Navn</th>
                 <th>Status</th>
                 <th>Beskrivelse</th>
+                <th>Administrér udstyr</th>
             </tr>
             </thead>
             <tbody></tbody>
@@ -161,7 +162,9 @@ async function loadEquipment() {
                 <td>${eq.name}</td>
                 <td class="${statusClass}">${status}</td>
                 <td>${eq.description ? eq.description : ""}</td>
+                <td><button onclick="deleteEquipment(${eq.id})">Slet</button></td>
             `;
+
             tableBody.appendChild(row);
         });
 
@@ -250,5 +253,29 @@ async function saveEquipment() {
     } catch (error) {
         console.error("Error saving equipment:", error);
         alert("Kunne ikke gemme udstyr: " + error.message);
+    }
+}
+
+async function deleteEquipment(equipmentId) {
+
+    if (!confirm("Er du sikker på du vil slette udstyret?")) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`${apiBaseUrl}/equipment/delete/${equipmentId}`, {
+            method: "DELETE"
+        });
+
+        if (!response.ok) {
+            const text = await response.text();
+            throw new Error(text);
+        }
+
+        loadEquipment();
+
+    } catch (error) {
+        console.error("Error deleting equipment:", error);
+        alert("Fejl ved sletning: " + error.message);
     }
 }
