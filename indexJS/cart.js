@@ -150,11 +150,6 @@ function removeActivityFromCart(index){
     updateCartCount();
 }
 
-function updateCartCount() {
-    const cart = getCart();
-    document.getElementById("cart-count").textContent = cart.length;
-}
-
 //Viser aktiviteter i indkøbskurven
 function displayCart() {
     const cart = getCart();
