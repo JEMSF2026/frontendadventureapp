@@ -89,9 +89,6 @@ function createLayout() {
     document.getElementById("addEquipmentBtn").addEventListener("click", showForm);
     document.getElementById("saveEquipmentBtn").addEventListener("click", saveEquipment);
     document.getElementById("cancelBtn").addEventListener("click", showTable);
-    document
-        .getElementById("activityDropdown")
-        .addEventListener("change", loadEquipment);
 }
 
 /*
@@ -180,6 +177,9 @@ async function showForm() {
     await loadActivitiesForForm();
     await loadEquipmentStates();
 
+    document.getElementById("cancelBtn").textContent = "Annuller";
+    document.getElementById("saveEquipmentBtn").textContent = "Gem";
+    document.getElementById("formTitle").textContent = "Tilføj nyt udstyr";
     document.getElementById("tableView").style.display = "none";
     document.getElementById("formView").style.display = "flex";
 }
