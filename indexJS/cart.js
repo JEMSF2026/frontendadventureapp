@@ -138,6 +138,37 @@ function getCart(){
 
     return JSON.parse(cart)
 }
+//Åbner indkøbskurv til single page view
+function openCart(){
+    document.getElementById("cart-view").style.display = "block";
+
+    displayCart();
+}
+function formatTime(dateTimeString) {
+    const d = new Date(dateTimeString);
+    return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+}
+
+function formatDate(dateString) {
+    const d = new Date(dateString);
+    return `${String(d.getDate()).padStart(2, "0")}-${String(d.getMonth() + 1).padStart(2, "0")}-${d.getFullYear()}`;
+}
+
+function removeActivityFromCart(index){
+    const cart = getCart();
+
+    cart.splice(index, 1);
+
+    localStorage.setItem("cart", JSON.stringify(cart));
+
+    displayCart();
+    updateCartCount();
+}
+
+function updateCartCount() {
+    const cart = getCart();
+    document.getElementById("cart-count").textContent = cart.length;
+}
 
 //Viser aktiviteter i indkøbskurven
 function displayCart() {
@@ -149,10 +180,11 @@ function displayCart() {
 
     if (cart.length === 0){
         container.innerHTML = "<p>Din indkøbskurv er tom</p>"
+        document.getElementById("total-price").innerText = "0 DKK";
         return;
     }
 
-    cart.forEach(item => {
+    cart.forEach((item, index) => {
         const div = document.createElement("div");
         div.className = "cart-item";
 
@@ -161,7 +193,14 @@ function displayCart() {
     <p>Dato: ${formatDate(item.dayOfActivity)}</p>
     <p>Tidsrum: ${formatTime(item.startTime)} - ${formatTime(item.endTime)}</p>
     <p>Pris: ${item.activity.price} DKK</p>
+    <button class="remove-btn">Fjern aktivitet</button>
 `;
+
+        const removeButton = div.querySelector(".remove-btn");
+
+        removeButton.addEventListener("click", () => {
+            removeActivityFromCart(index);
+        });
 
         container.appendChild(div);
         totalPrice += Number(item.activity.price);
