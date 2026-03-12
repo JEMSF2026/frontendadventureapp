@@ -2,21 +2,68 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Adventure App For Employees</title>
+    <title>JEMS Adventure - Medarbejder Portal</title>
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/equipmentOverview.css">
-    <link rel="stylesheet" href="css/addEquipmentForm.css">
+    <link rel="stylesheet" href="css/employee.css">
 </head>
 <body>
 
-<header>
-    <nav>
-        <a class="logo" href="employee.html">JEMS Adventure</a>
-    </nav>
-</header>
+<!-- Login skærm -->
+<div id="loginScreen">
+    <header>
+        <nav>
+            <a class="logo" href="index.html">JEMS Adventure</a>
+            <span class="nav-portal-label">Medarbejder Portal</span>
+        </nav>
+    </header>
+    <div class="login-container">
+        <div class="login-card">
+            <h2>Medarbejder Login</h2>
+            <p class="login-subtitle">Log ind med din arbejdsmail og adgangskode</p>
 
-<div class="content"></div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" placeholder="din@email.dk" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Adgangskode</label>
+                    <input type="password" id="password" placeholder="Efternavn + 4 sidste cifre" required>
+                </div>
+                <div id="loginError" class="login-error hidden">Forkert email eller adgangskode</div>
+                <button type="submit" class="login-btn">Log ind</button>
+            </form>
 
-<script src="js/equipmentOverview.js"></script>
+            <a href="index.html" class="back-link">← Tilbage til forsiden</a>
+        </div>
+    </div>
+</div>
+
+<!-- Admin dashboard (skjult indtil login) -->
+<div id="dashboard" class="hidden">
+    <header>
+        <nav>
+            <a class="logo" href="employee.html">JEMS Adventure</a>
+            <ul class="nav-list">
+                <li class="nav-item">
+                    <a href="#" id="nav-udstyr" class="nav-active" onclick="showEquipment(event)">Udstyr</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" id="nav-aktiviteter" onclick="showActivities(event)">Aktiviteter</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" onclick="logout(event)" class="nav-logout">Log ud</a>
+                </li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="content"></div>
+</div>
+
+<script src="employeeJS/equipmentOverview.js"></script>
+<script src="employeeJS/activityManagement.js"></script>
+<script src="employeeJS/employee.js"></script>
 </body>
 </html>
