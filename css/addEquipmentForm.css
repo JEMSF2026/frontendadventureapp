@@ -1,0 +1,26 @@
+.form-container {
+    display: flex;
+    flex-direction: column;
+    max-width: 400px;
+    gap: 10px;
+
+    margin: 60px auto;          /* centrerer formularen vandret */
+    padding: 20px;
+
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.form-container input,
+.form-container select {
+    padding: 8px;
+    font-size: 14px;
+}
+
+.form-container button {
+    width: 120px;
+    padding: 8px;
+}
