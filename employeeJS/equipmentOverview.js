@@ -63,7 +63,7 @@ function createLayout() {
 
     <div id="formView" class="form-container" style="display:none">
 
-        <h2>Tilføj nyt udstyr</h2>
+        <h2 id="formTitle">Tilføj nyt udstyr</h2> 
 
         <label>Navn</label>
         <input type="text" id="equipmentName">
@@ -89,9 +89,6 @@ function createLayout() {
     document.getElementById("addEquipmentBtn").addEventListener("click", showForm);
     document.getElementById("saveEquipmentBtn").addEventListener("click", saveEquipment);
     document.getElementById("cancelBtn").addEventListener("click", showTable);
-    document
-        .getElementById("activityDropdown")
-        .addEventListener("change", loadEquipment);
 }
 
 /*
@@ -143,7 +140,7 @@ async function loadEquipment() {
     if (!activityId) return;
 
     try {
-        const response = await fetch(`${apiBaseUrl}/equipment/${activityId}`);
+        const response = await fetch(`${apiBaseUrl}/equipments/${activityId}`);
         const equipmentList = await response.json();
 
         const tableBody = document.querySelector("#equipmentTable tbody");
@@ -162,7 +159,10 @@ async function loadEquipment() {
                 <td>${eq.name}</td>
                 <td class="${statusClass}">${status}</td>
                 <td>${eq.description ? eq.description : ""}</td>
-                <td><button onclick="deleteEquipment(${eq.id})">Slet</button></td>
+                <td>
+                <button onclick="editEquipment(${eq.id})">Redigér</button>
+                <button onclick="deleteEquipment(${eq.id})">Slet</button>
+                </td>
             `;
 
             tableBody.appendChild(row);
@@ -177,9 +177,15 @@ async function showForm() {
     await loadActivitiesForForm();
     await loadEquipmentStates();
 
+    document.getElementById("equipmentName").value = "";
+    document.getElementById("equipmentDescription").value = "";
+    document.getElementById("cancelBtn").textContent = "Annuller";
+    document.getElementById("saveEquipmentBtn").textContent = "Gem";
+    document.getElementById("formTitle").textContent = "Tilføj nyt udstyr";
     document.getElementById("tableView").style.display = "none";
     document.getElementById("formView").style.display = "flex";
 }
+
 
 function showTable() {
     document.getElementById("formView").style.display = "none";
@@ -230,14 +236,14 @@ async function saveEquipment() {
     const equipment = {
         name,
         description,
-        activity: { id: parseInt(activityId) },
-        equipmentState: { id: parseInt(stateId) }
+        activity: {id: parseInt(activityId)},
+        equipmentState: {id: parseInt(stateId)}
     };
 
     try {
         const response = await fetch(`${apiBaseUrl}/equipment/save`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {"Content-Type": "application/json"},
             body: JSON.stringify(equipment)
         });
 
@@ -277,5 +283,82 @@ async function deleteEquipment(equipmentId) {
     } catch (error) {
         console.error("Error deleting equipment:", error);
         alert("Fejl ved sletning: " + error.message);
+    }
+}
+
+async function editEquipment(equipmentId) {
+    try {
+        // Hent equipment fra backend
+        const response = await fetch(`${apiBaseUrl}/equipment/${equipmentId}`);
+        const equipment = await response.json();
+
+        await loadActivitiesForForm();
+        await loadEquipmentStates();
+
+        // Vis formen
+        document.getElementById("tableView").style.display = "none";
+        document.getElementById("formView").style.display = "flex";
+
+        // Fyld felter
+        document.getElementById("equipmentName").value = equipment.name;
+        document.getElementById("equipmentDescription").value = equipment.description;
+        document.getElementById("activitySelect").value = equipment.activity.id;
+        document.getElementById("stateSelect").value = equipment.equipmentState.id;
+
+        // Skift knap tekst og event
+        const saveBtn = document.getElementById("saveEquipmentBtn");
+        saveBtn.textContent = "Opdatér";
+        const formTitle = document.getElementById("formTitle");
+        formTitle.textContent = "Redigér udstyr";
+
+        // Fjern gamle event listeners
+        saveBtn.replaceWith(saveBtn.cloneNode(true));
+        const newBtn = document.getElementById("saveEquipmentBtn");
+
+        newBtn.addEventListener("click", () => updateEquipment(equipmentId));
+
+    } catch (error) {
+        console.error("Error loading equipment for edit:", error);
+        alert("Kunne ikke indlæse udstyr til redigering");
+    }
+}
+
+async function updateEquipment(equipmentId) {
+    const name = document.getElementById("equipmentName").value;
+    const description = document.getElementById("equipmentDescription").value;
+    const activityId = document.getElementById("activitySelect").value;
+    const stateId = document.getElementById("stateSelect").value;
+
+    if (!name || !activityId || !stateId) {
+        alert("Udfyld alle felter!");
+        return;
+    }
+
+    const equipment = {
+        name,
+        description,
+        activity: { id: parseInt(activityId) },
+        equipmentState: { id: parseInt(stateId) }
+    };
+
+    try {
+        const response = await fetch(`${apiBaseUrl}/equipment/update/${equipmentId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(equipment)
+        });
+
+        if (!response.ok) {
+            const text = await response.text();
+            throw new Error(text || "Fejl ved opdatering af udstyr");
+        }
+
+        alert("Udstyr opdateret!");
+        showTable();
+        loadEquipment();
+
+    } catch (error) {
+        console.error("Error updating equipment:", error);
+        alert("Kunne ikke opdatere udstyr: " + error.message);
     }
 }
