@@ -93,6 +93,18 @@ function showCreateActivityForm() {
                     <label for="activityDescription">Beskrivelse</label>
                     <textarea id="activityDescription" placeholder="Beskriv aktiviteten..." rows="4" required></textarea>
                 </div>
+                <div class="form-group">
+                    <label for="activityPrice">Pris (kr.)</label>
+                    <input type="number" id="activityPrice" placeholder="F.eks. 249" min="0" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="activityMaxParticipants">Maks deltagere</label>
+                    <input type="number" id="activityMaxParticipants" placeholder="F.eks. 20" min="1" required>
+                </div>
+                <div class="form-group">
+                    <label for="activityMinimumAge">Minimumsalder (år)</label>
+                    <input type="number" id="activityMinimumAge" placeholder="F.eks. 12" min="0" required>
+                </div>
                 <div id="activityFormError" class="form-error hidden"></div>
                 <div id="activityFormSuccess" class="form-success hidden"></div>
                 <button type="submit" class="submit-btn">Opret aktivitet</button>
@@ -115,6 +127,9 @@ async function createActivity(e) {
 
     const name = document.getElementById("activityName").value.trim();
     const description = document.getElementById("activityDescription").value.trim();
+    const price = parseFloat(document.getElementById("activityPrice").value);
+    const maxParticipants = parseInt(document.getElementById("activityMaxParticipants").value);
+    const minimumAge = parseInt(document.getElementById("activityMinimumAge").value);
     const errorEl = document.getElementById("activityFormError");
     const successEl = document.getElementById("activityFormSuccess");
 
@@ -125,7 +140,7 @@ async function createActivity(e) {
         const response = await fetch(`${apiBaseUrl}/activities`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name, description })
+            body: JSON.stringify({ name, description, price, maxParticipants, minimumAge })
         });
 
         if (response.status === 201) {
@@ -204,7 +219,6 @@ async function loadTimeslots(activityId) {
                         <th>Dato</th>
                         <th>Start</th>
                         <th>Slut</th>
-                        <th>Deltagere</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -213,7 +227,6 @@ async function loadTimeslots(activityId) {
                             <td>${ts.dayOfActivity}</td>
                             <td>${formatTime(ts.startTime)}</td>
                             <td>${formatTime(ts.endTime)}</td>
-                            <td>${ts.participants}</td>
                         </tr>
                     `).join("")}
                 </tbody>
@@ -258,10 +271,6 @@ function showTimeslotForm(activityId) {
                     <label for="endTime">Sluttidspunkt</label>
                     <input type="datetime-local" id="endTime" required>
                 </div>
-                <div class="form-group">
-                    <label for="participants">Antal deltagere</label>
-                    <input type="number" id="participants" min="1" required>
-                </div>
                 <div id="timeslotError" class="form-error hidden"></div>
                 <div id="timeslotSuccess" class="form-success hidden"></div>
                 <button type="submit" class="submit-btn">Gem tidsrum</button>
@@ -291,7 +300,7 @@ async function submitTimeslot(e, activityId) {
         dayOfActivity: document.getElementById("dayOfActivity").value,
         startTime: document.getElementById("startTime").value,
         endTime: document.getElementById("endTime").value,
-        participants: parseInt(document.getElementById("participants").value),
+        participants: 0,
         activity: { id: activityId },
         employee: { id: 1 }
     };
