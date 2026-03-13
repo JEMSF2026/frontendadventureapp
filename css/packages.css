@@ -1,0 +1,49 @@
+.package-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.package-card {
+    border: 1px solid #ccc;
+    padding: 20px;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+#package-details {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 30px;
+
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    background-color: #fafafa;
+}
+
+#package-details h1 {
+    margin-bottom: 10px;
+}
+
+#package-details p {
+    margin-bottom: 10px;
+}
+
+#package-details h3 {
+    margin-top: 25px;
+    margin-bottom: 15px;
+}
+
+.package-activity {
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+
+    background-color: white;
+}
