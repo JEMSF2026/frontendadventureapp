@@ -274,6 +274,34 @@
     margin-bottom: 0.75rem;
 }
 
+.activity-detail-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.activity-detail-header h2 {
+    margin-bottom: 0;
+}
+
+.edit-activity-btn {
+    padding: 0.4rem 0.9rem;
+    background-color: white;
+    color: #1a1a2e;
+    border: 1.5px solid #1a1a2e;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+    white-space: nowrap;
+}
+
+.edit-activity-btn:hover {
+    background-color: #1a1a2e;
+    color: white;
+}
+
 .activity-detail-description {
     color: #555;
     margin-bottom: 0.75rem;

@@ -1,3 +1,5 @@
+import { formatDate, formatTime } from "./utils.js";
+
 const backendUrl = "http://localhost:8080";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -5,38 +7,49 @@ document.addEventListener("DOMContentLoaded", () => {
     function renderReservation(reservation) {
 
         const container = document.querySelector(".content");
-        container.innerHTML = ""; // clear previous content
+        container.innerHTML = "";
 
-        const reservationDiv = document.createElement("div");
+        const card = document.createElement("div");
+        card.classList.add("reservation-card");
 
-        reservationDiv.innerHTML = `
-        <h2>Reservation:</h2>
-        <p><strong>ID:</strong> ${reservation.id}</p>
-        <p><strong>Booking Number:</strong> ${reservation.bookingNumber}</p>
-        <p><strong>Date of Reservation:</strong> ${reservation.dateOfReservation}</p>
-        <p><strong>Price:</strong> ${reservation.price}</p>
+        card.innerHTML = `
+        <h2>Reservation</h2>
+
+        <div class="reservation-top">
+
+            <div class="customer-info">
+                <h3>Kunde</h3><br>
+            </div>
+            
+            <div class="reservation-info">
+                <p><strong>Bookingnummer:</strong> ${reservation.bookingNumber}</p>
+                <p><strong>Reserveret den:</strong> ${formatDate(reservation.dateOfReservation)} kl: ${formatTime(reservation.dateOfReservation)}</p>
+            </div>
+
+           
+        </div>
+
+        <div class="timeslot-section">
+            <h3>Aktiviteter</h3>
+        </div>
     `;
 
-        const customer = reservation.customer;
-
-        const customerDiv = document.createElement("div");
-        customerDiv.innerHTML = `<h3>Customer</h3>`;
+        const customerBox = card.querySelector(".customer-info");
 
         const fields = [
-            {label: "First Name", value: customer.firstName},
-            {label: "Last Name", value: customer.lastName},
-            {label: "Email", value: customer.email},
-            {label: "Phone Number", value: customer.phoneNumber},
-            {label: "Company Name", value: customer.companyName},
-            {label: "CVR", value: customer.cvr}
+            {label: "Fornavn", value: reservation.customer.firstName},
+            {label: "Efternavn", value: reservation.customer.lastName},
+            {label: "Email", value: reservation.customer.email},
+            {label: "Mobil", value: reservation.customer.phoneNumber},
+            {label: "Firmanavn", value: reservation.customer.companyName},
+            {label: "CVR", value: reservation.customer.cvr}
         ];
-        //Performs check on whether fields are empty in the loaded object, and only assigns a paragraph element and appends
-        //these to the customer div container, so that they lastly can be shown in a sequential manner.
+
         fields.forEach(field => {
-            if (field.value !== null && field.value !== undefined && field.value !== "" && field.value !== 0) {
+            if (field.value) {
                 const p = document.createElement("p");
                 p.innerHTML = `<strong>${field.label}:</strong> ${field.value}`;
-                customerDiv.appendChild(p);
+                customerBox.appendChild(p);
             }
         });
 
@@ -99,6 +112,30 @@ document.addEventListener("DOMContentLoaded", () => {
         // ===============================
 
         container.appendChild(reservationDiv);
+        const timeslotSection = card.querySelector(".timeslot-section");
+
+        reservation.timeslots.forEach(ts => {
+
+            const div = document.createElement("div");
+            div.classList.add("timeslot-item");
+
+            div.innerHTML = `
+            ${ts.activity.name}<br>
+            Dag: ${formatDate(ts.dayOfActivity)}<br>
+            Tidsrum: ${formatTime(ts.startTime)} - ${formatTime(ts.endTime)}<br>
+            Deltagere: ${ts.participants}<br>
+            Pris: ${ts.activity.price}
+        `;
+
+            timeslotSection.appendChild(div);
+
+        });
+
+        const totalPrice = document.createElement("p");
+        totalPrice.innerHTML = `<strong>Samlet pris: ${reservation.price}</strong>`;
+        timeslotSection.appendChild(totalPrice);
+
+        container.appendChild(card);
     }
 
 //Event Controller

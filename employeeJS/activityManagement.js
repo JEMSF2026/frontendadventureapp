@@ -171,7 +171,10 @@ function showActivityDetails(activity) {
     panel.classList.remove("hidden");
     panel.innerHTML = `
         <div class="activity-detail-card">
-            <h2>${activity.name}</h2>
+            <div class="activity-detail-header">
+                <h2>${activity.name}</h2>
+                <button class="edit-activity-btn" onclick="showEditActivityForm(${activity.id})">Rediger aktivitet</button>
+            </div>
             <p class="activity-detail-description">${activity.description || ""}</p>
             <div class="activity-detail-meta">
                 ${activity.price != null           ? `<span>Pris: ${activity.price} kr.</span>` : ""}
@@ -227,6 +230,9 @@ async function loadTimeslots(activityId) {
                             <td>${ts.dayOfActivity}</td>
                             <td>${formatTime(ts.startTime)}</td>
                             <td>${formatTime(ts.endTime)}</td>
+                            <td>
+                            <button onclick="deleteTimeslot(${ts.id}, ${activityId})">Slet</button>
+                            </td>
                         </tr>
                     `).join("")}
                 </tbody>
@@ -282,6 +288,101 @@ function showTimeslotForm(activityId) {
 }
 
 /*
+ * showEditActivityForm(activityId)
+ * Henter aktiviteten fra GET /activities/{activityId} og viser en redigeringsformular
+ * i detalje-panelet med de eksisterende værdier forudfyldt.
+ * Kaldes ved klik på "Rediger aktivitet"-knappen i showActivityDetails().
+ */
+async function showEditActivityForm(activityId) {
+    try {
+        const response = await fetch(`${apiBaseUrl}/activities/${activityId}`);
+        const activity = await response.json();
+
+        const panel = document.getElementById("activityDetailPanel");
+        panel.classList.remove("hidden");
+        panel.innerHTML = `
+            <div class="activity-detail-card">
+                <h2>Rediger aktivitet</h2>
+                <form id="editActivityForm">
+                    <div class="form-group">
+                        <label for="editActivityName">Navn</label>
+                        <input type="text" id="editActivityName" value="${activity.name}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editActivityDescription">Beskrivelse</label>
+                        <textarea id="editActivityDescription" rows="4" required>${activity.description || ""}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="editActivityPrice">Pris (kr.)</label>
+                        <input type="number" id="editActivityPrice" value="${activity.price ?? ""}" min="0" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editActivityMaxParticipants">Maks deltagere</label>
+                        <input type="number" id="editActivityMaxParticipants" value="${activity.maxParticipants ?? ""}" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editActivityMinimumAge">Minimumsalder (år)</label>
+                        <input type="number" id="editActivityMinimumAge" value="${activity.minimumAge ?? ""}" min="0" required>
+                    </div>
+                    <div id="editActivityFormError" class="form-error hidden"></div>
+                    <div id="editActivityFormSuccess" class="form-success hidden"></div>
+                    <button type="submit" class="submit-btn">Gem ændringer</button>
+                </form>
+            </div>
+        `;
+
+        document.getElementById("editActivityForm").addEventListener("submit", (e) => updateActivity(e, activityId));
+    } catch (error) {
+        console.error("Fejl ved hentning af aktivitet:", error);
+    }
+}
+
+/*
+ * updateActivity(e, activityId)
+ * Kaldes ved submit af #editActivityForm.
+ * Sender opdaterede aktivitetsoplysninger som JSON til PUT /activities/update/{activityId}.
+ *   - 200 OK → viser bekræftelse, genindlæser aktivitetslisten og viser de opdaterede detaljer
+ *   - Fejl   → viser fejlbesked til brugeren
+ */
+async function updateActivity(e, activityId) {
+    e.preventDefault();
+
+    const name = document.getElementById("editActivityName").value.trim();
+    const description = document.getElementById("editActivityDescription").value.trim();
+    const price = parseFloat(document.getElementById("editActivityPrice").value);
+    const maxParticipants = parseInt(document.getElementById("editActivityMaxParticipants").value);
+    const minimumAge = parseInt(document.getElementById("editActivityMinimumAge").value);
+    const errorEl = document.getElementById("editActivityFormError");
+    const successEl = document.getElementById("editActivityFormSuccess");
+
+    errorEl.classList.add("hidden");
+    successEl.classList.add("hidden");
+
+    try {
+        const response = await fetch(`${apiBaseUrl}/activities/update/${activityId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, description, price, maxParticipants, minimumAge })
+        });
+
+        if (response.ok) {
+            const updated = await response.json();
+            successEl.textContent = `Aktiviteten "${updated.name}" blev opdateret.`;
+            successEl.classList.remove("hidden");
+            loadActivityList();
+            setTimeout(() => showActivityDetails(updated), 1500);
+        } else {
+            errorEl.textContent = "Noget gik galt. Prøv igen.";
+            errorEl.classList.remove("hidden");
+        }
+    } catch (error) {
+        console.error("Fejl ved opdatering af aktivitet:", error);
+        errorEl.textContent = "Kunne ikke oprette forbindelse til serveren.";
+        errorEl.classList.remove("hidden");
+    }
+}
+
+/*
  * submitTimeslot(e, activityId)
  * Kaldes ved submit af #addTimeslotForm.
  * Sender tidsrum-data som JSON til POST /timeslots.
@@ -325,5 +426,30 @@ async function submitTimeslot(e, activityId) {
         console.error("Fejl ved oprettelse af tidsrum:", error);
         errorEl.textContent = "Kunne ikke oprette forbindelse til serveren.";
         errorEl.classList.remove("hidden");
+    }
+}
+
+async function deleteTimeslot(timeslotId, activityId) {
+
+    if (!confirm("Er du sikker på du vil slette timeslottet?")) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`${apiBaseUrl}/timeslot/delete/${timeslotId}`, {
+            method: "DELETE"
+        });
+
+        if (!response.ok) {
+            const text = await response.text();
+            throw new Error(text);
+        }
+
+
+        loadTimeslots(activityId);
+
+    } catch (error) {
+        console.error("Error deleting timeslot:", error);
+        alert("Fejl ved sletning, fordi timeslottet er reserveret.: " + error.message);
     }
 }
