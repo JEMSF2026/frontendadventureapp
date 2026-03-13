@@ -1,4 +1,5 @@
 import{ renderPackages } from "./packages.js";
+import { renderCalendarForPackage } from "./activityCalenders.js";
 
 export async function renderPackageDetails(id){
 
@@ -60,6 +61,10 @@ export async function renderPackageDetails(id){
 
         const button = document.createElement("button");
         button.textContent = "Book pakke";
+
+        button.addEventListener("click", () => {
+            renderCalendarForPackage(id);
+        });
 
         priceContainer.appendChild(price);
         priceContainer.append(button);

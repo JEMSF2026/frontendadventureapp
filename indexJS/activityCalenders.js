@@ -1,4 +1,5 @@
 import { updateCartCount } from "./utils.js";
+import { renderCart } from "./cart.js";
 
 const backendUrl = "http://localhost:8080";
 
@@ -37,7 +38,7 @@ async function loadTimeslots(activityId, month, year) {
 // ------------------------------
 // Byg kalender med info-boks
 // ------------------------------
-function buildCalendar(timeslots, month, year, activityId, activityName) {
+function buildCalendar(timeslots, month, year, activityId, activityName, packageId = null) {
     selectedTimeslot = null;
     const selectedActivity = activities.find(a => a.id === activityId);
 
@@ -69,13 +70,22 @@ function buildCalendar(timeslots, month, year, activityId, activityName) {
     // Info-boks
     const infoBox = document.createElement("div");
     infoBox.classList.add("infoBox");
-    infoBox.innerHTML = `
+
+    if (packageId){
+        infoBox.innerHTML = `
+        <h2>Firmapakke</h2>
+        <p>Vælg dato for at se tidsrummet</p>
+        `;
+    } else {
+
+        infoBox.innerHTML = `
         <h2>${selectedActivity.name}</h2>
         <p>${selectedActivity.description || "Ingen beskrivelse"}</p>
         <p>Aldersgrænse: ${selectedActivity.minimumAge}</p>
         <p>Der er plads til ${selectedActivity.maxParticipants} deltagere</p>
         <p>Pris: ${selectedActivity.price} kr.</p>
     `;
+    }
 
     // Container for kalender + tidstabel
     const calendarDiv = document.createElement("div");
@@ -154,6 +164,14 @@ function buildCalendar(timeslots, month, year, activityId, activityName) {
     `;
 
     calendarDiv.innerHTML = calendarHTML;
+
+    if (packageId){
+        const timeContainer = calendarDiv.querySelector(".timeContainer");
+        if (timeContainer){
+            timeContainer.style.display = "none";
+        }
+    }
+
     calendarWrapper.appendChild(infoBox);
     calendarWrapper.appendChild(calendarDiv);
     content.appendChild(calendarWrapper);
@@ -163,8 +181,32 @@ function buildCalendar(timeslots, month, year, activityId, activityName) {
     // -----------------------------
     let selectedCell = null;
     calendarWrapper.querySelectorAll(".clickable").forEach(cell => {
-        cell.addEventListener("click", () => {
+        cell.addEventListener("click", async () => {
             const date = cell.dataset.date;
+
+            if (packageId){
+                const response = await fetch(
+                    `${backendUrl}/packageTimeRange?packageId=${packageId}&dayOfActivity=${date}&participants=10`);
+
+                const timeRange = await response.text();
+
+                infoBox.innerHTML += `<p><strong>Tid:</strong> ${timeRange}</p>`;
+
+                const bookBtn = document.createElement("button");
+                bookBtn.textContent = "Book pakke";
+
+                bookBtn.addEventListener("click", () => {
+
+                    localStorage.setItem("packageBooking", JSON.stringify({
+                        packageId: packageId,
+                        dayOfActivity: date
+                    }));
+                    renderCart();
+                });
+                infoBox.appendChild(bookBtn);
+
+                return;
+            }
 
             if (selectedCell) {
                 selectedCell.classList.remove("selected");
@@ -282,6 +324,8 @@ function addToCart(){
 const calParams = new URLSearchParams(window.location.search);
 const preselectedActivityId = calParams.get("activityId") ? parseInt(calParams.get("activityId")) : null;
 
+const packageId = calParams.get("packageId") ? parseInt(calParams.get("packageId")) : null;
+
 if (preselectedActivityId) {
     const today = new Date();
     currentMonth = today.getMonth();
@@ -297,5 +341,18 @@ if (preselectedActivityId) {
             console.error("Aktivitet ikke fundet:", currentActivityId);
             content.innerHTML = "<p>Aktiviteten kunne ikke findes.</p>";
         }
+    });
+}
+
+export function renderCalendarForPackage(pkgId){
+    const today = new Date();
+    currentMonth = today.getMonth();
+    currentYear = today.getFullYear();
+
+    const content = document.querySelector(".content")
+    content.innerHTML = "";
+
+    loadActivities().then(() => {
+        buildCalendar([], currentMonth, currentYear, null, "Firmapakke", pkgId);
     });
 }
