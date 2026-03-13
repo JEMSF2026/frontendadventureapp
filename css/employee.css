@@ -285,6 +285,11 @@
     margin-bottom: 0;
 }
 
+.activity-detail-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
 .edit-activity-btn {
     padding: 0.4rem 0.9rem;
     background-color: white;
@@ -299,6 +304,23 @@
 
 .edit-activity-btn:hover {
     background-color: #1a1a2e;
+    color: white;
+}
+
+.delete-activity-btn {
+    padding: 0.4rem 0.9rem;
+    background-color: white;
+    color: #e63946;
+    border: 1.5px solid #e63946;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+    white-space: nowrap;
+}
+
+.delete-activity-btn:hover {
+    background-color: #e63946;
     color: white;
 }
 

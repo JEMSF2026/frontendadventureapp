@@ -173,7 +173,10 @@ function showActivityDetails(activity) {
         <div class="activity-detail-card">
             <div class="activity-detail-header">
                 <h2>${activity.name}</h2>
-                <button class="edit-activity-btn" onclick="showEditActivityForm(${activity.id})">Rediger aktivitet</button>
+                <div class="activity-detail-actions">
+                    <button class="edit-activity-btn" onclick="showEditActivityForm(${activity.id})">Rediger aktivitet</button>
+                    <button class="delete-activity-btn" onclick="deleteActivity(${activity.id}, '${activity.name.replace(/'/g, "\\'")}')">Slet aktivitet</button>
+                </div>
             </div>
             <p class="activity-detail-description">${activity.description || ""}</p>
             <div class="activity-detail-meta">
@@ -282,6 +285,41 @@ function showTimeslotForm(activityId) {
     `;
 
     document.getElementById("addTimeslotForm").addEventListener("submit", (e) => submitTimeslot(e, activityId));
+}
+
+/*
+ * deleteActivity(activityId, activityName)
+ * Sletter aktiviteten permanent via DELETE /activities/delete/{activityId}.
+ * Beder brugeren om bekræftelse inden sletning.
+ *   - 200 OK → skjuler detalje-panelet og genindlæser aktivitetslisten
+ *   - Fejl   → viser alert med fejlbesked
+ */
+async function deleteActivity(activityId, activityName) {
+    if (!confirm(`Er du sikker på, at du vil slette "${activityName}"? Denne handling kan ikke fortrydes.`)) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`${apiBaseUrl}/activities/delete/${activityId}`, {
+            method: "DELETE"
+        });
+
+        if (response.ok) {
+            const panel = document.getElementById("activityDetailPanel");
+            panel.classList.add("hidden");
+            panel.innerHTML = "";
+            document.querySelectorAll(".activity-list-item").forEach(el => el.classList.remove("active"));
+            loadActivityList();
+        } else if (response.status === 409) {
+            const message = await response.text();
+            alert(message);
+        } else {
+            alert("Noget gik galt. Aktiviteten kunne ikke slettes.");
+        }
+    } catch (error) {
+        console.error("Fejl ved sletning af aktivitet:", error);
+        alert("Kunne ikke oprette forbindelse til serveren.");
+    }
 }
 
 /*
