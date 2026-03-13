@@ -227,6 +227,9 @@ async function loadTimeslots(activityId) {
                             <td>${ts.dayOfActivity}</td>
                             <td>${formatTime(ts.startTime)}</td>
                             <td>${formatTime(ts.endTime)}</td>
+                            <td>
+                            <button onclick="deleteTimeslot(${ts.id}, ${activityId})">Slet</button>
+                            </td>
                         </tr>
                     `).join("")}
                 </tbody>
@@ -325,5 +328,30 @@ async function submitTimeslot(e, activityId) {
         console.error("Fejl ved oprettelse af tidsrum:", error);
         errorEl.textContent = "Kunne ikke oprette forbindelse til serveren.";
         errorEl.classList.remove("hidden");
+    }
+}
+
+async function deleteTimeslot(timeslotId, activityId) {
+
+    if (!confirm("Er du sikker på du vil slette timeslottet?")) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`${apiBaseUrl}/timeslot/delete/${timeslotId}`, {
+            method: "DELETE"
+        });
+
+        if (!response.ok) {
+            const text = await response.text();
+            throw new Error(text);
+        }
+
+
+        loadTimeslots(activityId);
+
+    } catch (error) {
+        console.error("Error deleting timeslot:", error);
+        alert("Fejl ved sletning, fordi timeslottet er reserveret.: " + error.message);
     }
 }
