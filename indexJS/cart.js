@@ -1,5 +1,5 @@
 import { formatDate, formatTime, updateCartCount } from "./utils.js";
-import { renderConfirmation } from "./bookingconfirmation.js";
+import { renderConfirmation } from "./bookingConfirmation.js";
 
 export function renderCart() {
     const content = document.querySelector(".content");

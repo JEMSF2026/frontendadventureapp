@@ -37,7 +37,7 @@ async function loadTimeslots(activityId, month, year) {
 // ------------------------------
 // Byg kalender med info-boks
 // ------------------------------
-function buildCalendar(timeslots, month, year, activityId, activityName, packageId = null) {
+function buildCalendar(timeslots, month, year, activityId, activityName) {
     selectedTimeslot = null;
     const selectedActivity = activities.find(a => a.id === activityId);
 
@@ -69,22 +69,13 @@ function buildCalendar(timeslots, month, year, activityId, activityName, package
     // Info-boks
     const infoBox = document.createElement("div");
     infoBox.classList.add("infoBox");
-
-    if (packageId){
-        infoBox.innerHTML = `
-        <h2>Firmapakke</h2>
-        <p>Vælg dato for at se tidsrummet</p>
-        `;
-    } else {
-
-        infoBox.innerHTML = `
+    infoBox.innerHTML = `
         <h2>${selectedActivity.name}</h2>
         <p>${selectedActivity.description || "Ingen beskrivelse"}</p>
         <p>Aldersgrænse: ${selectedActivity.minimumAge}</p>
         <p>Der er plads til ${selectedActivity.maxParticipants} deltagere</p>
         <p>Pris: ${selectedActivity.price} kr.</p>
     `;
-    }
 
     // Container for kalender + tidstabel
     const calendarDiv = document.createElement("div");
@@ -119,19 +110,9 @@ function buildCalendar(timeslots, month, year, activityId, activityName, package
                 let cellClass = "";
                 let title = "";
 
-                if(packageId){
-
-                    if (availableDays.includes(dateString)) {
-                        cellClass = "clickable allAvailable";
-                        title = "Tjek tider";
-                    } else {
-                        cellClass = "reserved";
-                        title = "Ikke ledig";
-                    }
-
-                } else if (!slotsForDay || slotsForDay.length === 0) {
-                cellClass = "noSlots";
-                title = "Ingen tider";
+                if(!slotsForDay || slotsForDay.length === 0){
+                    cellClass = "noSlots";
+                    title = "Ingen tider";
                 } else {
                     const reservedCount = slotsForDay.filter(t => t.reservation).length;
                     if(reservedCount === 0){
@@ -177,73 +158,13 @@ function buildCalendar(timeslots, month, year, activityId, activityName, package
     calendarWrapper.appendChild(calendarDiv);
     content.appendChild(calendarWrapper);
 
-    if (packageId){
-        const addBtn = calendarWrapper.querySelector("#addToCartBtn");
-        if (addBtn) addBtn.style.display = "none";
-    }
-
     // -----------------------------
     // Event listeners for kalender
     // -----------------------------
     let selectedCell = null;
     calendarWrapper.querySelectorAll(".clickable").forEach(cell => {
-        cell.addEventListener("click", async () => {
-
-            if (selectedCell){
-                selectedCell.classList.remove("selected");
-            }
-
-            cell.classList.add("selected");
-            selectedCell = cell;
-
+        cell.addEventListener("click", () => {
             const date = cell.dataset.date;
-
-            if (packageId){
-                const response = await fetch(
-                    `${backendUrl}/packageTimeRange?packageId=${packageId}&dayOfActivity=${date}&participants=10`);
-
-
-                if (!response.ok){
-                    infoBox.innerHTML = `
-                    <h2>Firmapakke</h2>
-                    <p>Denne dag kan ikke bookes</p>
-                    `;
-                    return;
-                }
-
-                const timeRange = await response.text();
-
-                const [start, end] = timeRange.split(" - ");
-
-                const tbody = calendarWrapper.querySelector("#timeTable tbody");
-
-                tbody.innerHTML = `
-                <tr class="timeAvailable">
-                <td>${start}</td>
-                <td>${end}</td>
-                </tr>
-                `;
-
-                const timeContainer = calendarWrapper.querySelector(".timeContainer");
-
-                const oldBtn = calendarWrapper.querySelector(".packageBookBtn");
-                if (oldBtn) oldBtn.remove()
-
-                const bookBtn = document.createElement("button");
-                bookBtn.textContent = "Book pakke";
-                bookBtn.id = "addToCartBtn";
-
-                bookBtn.addEventListener("click", () => {
-                    localStorage.setItem("packageBooking", JSON.stringify({
-                        packageId: packageId,
-                        dayOfActivity: date
-                    }));
-                    renderCart();
-                });
-                timeContainer.appendChild(bookBtn);
-
-                return;
-            }
 
             if (selectedCell) {
                 selectedCell.classList.remove("selected");
@@ -361,8 +282,6 @@ function addToCart(){
 const calParams = new URLSearchParams(window.location.search);
 const preselectedActivityId = calParams.get("activityId") ? parseInt(calParams.get("activityId")) : null;
 
-const packageId = calParams.get("packageId") ? parseInt(calParams.get("packageId")) : null;
-
 if (preselectedActivityId) {
     const today = new Date();
     currentMonth = today.getMonth();
@@ -378,29 +297,5 @@ if (preselectedActivityId) {
             console.error("Aktivitet ikke fundet:", currentActivityId);
             content.innerHTML = "<p>Aktiviteten kunne ikke findes.</p>";
         }
-    });
-}
-
-async function loadPackageTimeslots(packageId, month, year){
-
-    const response = await fetch(
-        `${backendUrl}/packageAvailableDays?packageId=${packageId}&participants=10`
-    );
-
-    availableDays = await response.json();
-
-    buildCalendar([], month,  year, null, "Firmapakke", packageId);
-}
-
-export function renderCalendarForPackage(pkgId){
-    const today = new Date();
-    currentMonth = today.getMonth();
-    currentYear = today.getFullYear();
-
-    const content = document.querySelector(".content")
-    content.innerHTML = "";
-
-    loadActivities().then(() => {
-        loadPackageTimeslots(pkgId, currentMonth, currentYear);
     });
 }
