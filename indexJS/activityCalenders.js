@@ -1,5 +1,4 @@
 import { updateCartCount } from "./utils.js";
-import { renderCart } from "./cart.js";
 
 const backendUrl = "http://localhost:8080";
 
@@ -120,9 +119,19 @@ function buildCalendar(timeslots, month, year, activityId, activityName, package
                 let cellClass = "";
                 let title = "";
 
-                if(!slotsForDay || slotsForDay.length === 0){
-                    cellClass = "noSlots";
-                    title = "Ingen tider";
+                if(packageId){
+
+                    if (availableDays.includes(dateString)) {
+                        cellClass = "clickable allAvailable";
+                        title = "Tjek tider";
+                    } else {
+                        cellClass = "reserved";
+                        title = "Ikke ledig";
+                    }
+
+                } else if (!slotsForDay || slotsForDay.length === 0) {
+                cellClass = "noSlots";
+                title = "Ingen tider";
                 } else {
                     const reservedCount = slotsForDay.filter(t => t.reservation).length;
                     if(reservedCount === 0){
@@ -164,17 +173,14 @@ function buildCalendar(timeslots, month, year, activityId, activityName, package
     `;
 
     calendarDiv.innerHTML = calendarHTML;
-
-    if (packageId){
-        const timeContainer = calendarDiv.querySelector(".timeContainer");
-        if (timeContainer){
-            timeContainer.style.display = "none";
-        }
-    }
-
     calendarWrapper.appendChild(infoBox);
     calendarWrapper.appendChild(calendarDiv);
     content.appendChild(calendarWrapper);
+
+    if (packageId){
+        const addBtn = calendarWrapper.querySelector("#addToCartBtn");
+        if (addBtn) addBtn.style.display = "none";
+    }
 
     // -----------------------------
     // Event listeners for kalender
@@ -182,28 +188,59 @@ function buildCalendar(timeslots, month, year, activityId, activityName, package
     let selectedCell = null;
     calendarWrapper.querySelectorAll(".clickable").forEach(cell => {
         cell.addEventListener("click", async () => {
+
+            if (selectedCell){
+                selectedCell.classList.remove("selected");
+            }
+
+            cell.classList.add("selected");
+            selectedCell = cell;
+
             const date = cell.dataset.date;
 
             if (packageId){
                 const response = await fetch(
                     `${backendUrl}/packageTimeRange?packageId=${packageId}&dayOfActivity=${date}&participants=10`);
 
+
+                if (!response.ok){
+                    infoBox.innerHTML = `
+                    <h2>Firmapakke</h2>
+                    <p>Denne dag kan ikke bookes</p>
+                    `;
+                    return;
+                }
+
                 const timeRange = await response.text();
 
-                infoBox.innerHTML += `<p><strong>Tid:</strong> ${timeRange}</p>`;
+                const [start, end] = timeRange.split(" - ");
+
+                const tbody = calendarWrapper.querySelector("#timeTable tbody");
+
+                tbody.innerHTML = `
+                <tr class="timeAvailable">
+                <td>${start}</td>
+                <td>${end}</td>
+                </tr>
+                `;
+
+                const timeContainer = calendarWrapper.querySelector(".timeContainer");
+
+                const oldBtn = calendarWrapper.querySelector(".packageBookBtn");
+                if (oldBtn) oldBtn.remove()
 
                 const bookBtn = document.createElement("button");
                 bookBtn.textContent = "Book pakke";
+                bookBtn.id = "addToCartBtn";
 
                 bookBtn.addEventListener("click", () => {
-
                     localStorage.setItem("packageBooking", JSON.stringify({
                         packageId: packageId,
                         dayOfActivity: date
                     }));
                     renderCart();
                 });
-                infoBox.appendChild(bookBtn);
+                timeContainer.appendChild(bookBtn);
 
                 return;
             }
@@ -344,6 +381,17 @@ if (preselectedActivityId) {
     });
 }
 
+async function loadPackageTimeslots(packageId, month, year){
+
+    const response = await fetch(
+        `${backendUrl}/packageAvailableDays?packageId=${packageId}&participants=10`
+    );
+
+    availableDays = await response.json();
+
+    buildCalendar([], month,  year, null, "Firmapakke", packageId);
+}
+
 export function renderCalendarForPackage(pkgId){
     const today = new Date();
     currentMonth = today.getMonth();
@@ -353,6 +401,6 @@ export function renderCalendarForPackage(pkgId){
     content.innerHTML = "";
 
     loadActivities().then(() => {
-        buildCalendar([], currentMonth, currentYear, null, "Firmapakke", pkgId);
+        loadPackageTimeslots(pkgId, currentMonth, currentYear);
     });
 }
