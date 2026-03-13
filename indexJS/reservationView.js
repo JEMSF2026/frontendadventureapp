@@ -59,39 +59,78 @@ document.addEventListener("DOMContentLoaded", () => {
             reservationDiv.appendChild(timeslotDiv);
         }
 
+        const cancelButton = document.createElement("button");
+        cancelButton.textContent = "Cancel Reservation";
+
+        // Attach event listener to call backend cancellation endpoint
+        cancelButton.addEventListener("click", async () => {
+
+            // Confirmation dialog to avoid accidental cancellation
+            const confirmed = confirm("Are you sure you want to cancel this reservation?");
+            if (!confirmed) return;
+
+            try {
+
+                // Call backend cancel endpoint using reservation ID
+                const response = await fetch(`${backendUrl}/reservation/${reservation.id}/cancel`, {
+                    method: "POST"
+                });
+
+                if (!response.ok) {
+                    throw new Error("Failed to cancel reservation");
+                }
+
+                // Update UI after successful cancellation
+                container.innerHTML = `
+                    <h2>Reservation Cancelled</h2>
+                    <p>The reservation with booking number <strong>${reservation.bookingNumber}</strong> has been cancelled.</p>
+                `;
+
+            } catch (error) {
+
+                container.innerHTML = `<p>${error.message}</p>`;
+            }
+
+        });
+
+        // Add cancel button under reservation info
+        reservationDiv.appendChild(cancelButton);
+
+        // ===============================
+
         container.appendChild(reservationDiv);
     }
 
 //Event Controller
 
 
-        const button = document.getElementById("reservation-btn");
+    const button = document.getElementById("reservation-btn");
 
-        button.addEventListener("click", async (e) => {
+    button.addEventListener("click", async (e) => {
 
-            e.preventDefault();
+        e.preventDefault();
 
-            const bookingNumber = prompt("Enter booking number:");
+        const bookingNumber = prompt("Enter booking number:");
 
-            if (!bookingNumber) return;
+        if (!bookingNumber) return;
 
-            try {
+        try {
 
-                const response = await fetch(`${backendUrl}/${bookingNumber}`);
+            const response = await fetch(`${backendUrl}/${bookingNumber}`);
 
-                if (!response.ok) {
-                    throw new Error("Reservation not found");
-                }
-
-                const reservation = await response.json();
-
-                renderReservation(reservation);
-
-            } catch (error) {
-
-                document.querySelector(".content").innerHTML =
-                    `<p>${error.message}</p>`;
+            if (!response.ok) {
+                throw new Error("Reservation not found");
             }
 
-        });
+            const reservation = await response.json();
+
+            renderReservation(reservation);
+
+        } catch (error) {
+
+            document.querySelector(".content").innerHTML =
+                `<p>${error.message}</p>`;
+        }
+
     });
+});
