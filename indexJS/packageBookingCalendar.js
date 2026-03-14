@@ -1,10 +1,15 @@
-import { renderCart } from "./cart.js";
+import { renderPackageBooking } from "./packageBooking.js";
 
 const backendUrl = "http://localhost:8080";
 
 let currentMonth;
 let currentYear;
 let availableDays = [];
+
+async function loadPackage(packageId){
+    const response = await fetch(`${backendUrl}/packages/${packageId}`);
+    return await response.json();
+}
 
 export async function renderPackageCalendar(packageId){
 
@@ -15,9 +20,11 @@ export async function renderPackageCalendar(packageId){
     const content = document.querySelector(".content");
     content.innerHTML = "";
 
+    const pkg = await loadPackage(packageId);
+
     await loadAvailableDays(packageId);
 
-    buildPackageCalendar(packageId, currentMonth, currentYear);
+    buildPackageCalendar(pkg, packageId, currentMonth, currentYear);
 }
 
 async function loadAvailableDays(packageId){
@@ -29,7 +36,7 @@ async function loadAvailableDays(packageId){
     availableDays = await response.json();
 }
 
-function buildPackageCalendar(packageId, month, year){
+function buildPackageCalendar(pkg, packageId, month, year){
 
     const content = document.querySelector(".content");
 
@@ -40,7 +47,9 @@ function buildPackageCalendar(packageId, month, year){
     infoBox.classList.add("infoBox");
 
     infoBox.innerHTML = `
-        <h2>Firmapakke</h2>
+        <h2>${pkg.packageName}</h2>
+        <p>${pkg.description}</p>
+        <p>Pris: ${pkg.price} DKK</p>
         <p>Vælg dato for at se tidsrummet</p>
     `;
 
@@ -113,7 +122,7 @@ function buildPackageCalendar(packageId, month, year){
             </tbody>
             </table>
 
-            <button id="bookPackageBtn">Book pakke</button>
+            <button id="addToCartBtn">Book pakke</button>
         </div>
     `;
 
@@ -146,14 +155,13 @@ function buildPackageCalendar(packageId, month, year){
             const tbody = calendarWrapper.querySelector("#timeTable tbody");
 
             tbody.innerHTML =
-                `<tr class="timeAvailable">
-                <td>${start}</td>
+                `<td>${start}</td>
                 <td>${end}</td>
             </tr>`;
         });
     });
 
-    const bookBtn = calendarWrapper.querySelector("#bookPackageBtn");
+    const bookBtn = calendarWrapper.querySelector("#addToCartBtn");
 
     bookBtn.addEventListener("click", ()=>{
 
@@ -167,6 +175,6 @@ function buildPackageCalendar(packageId, month, year){
             dayOfActivity: selectedDate
         }));
 
-        renderCart();
+        renderPackageBooking(packageId, selectedDate);
     });
 }

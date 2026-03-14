@@ -91,3 +91,90 @@ export function renderConfirmation(bookingNumber, customer, cart, dateOfReservat
 
     content.appendChild(section);
 }
+
+export function renderPackageConfirmation(bookingNumber, customer, reservation, packageName){
+
+    const content = document.querySelector(".content");
+    content.innerHTML = "";
+
+    const main = document.createElement("main");
+
+    const section = document.createElement("section");
+    section.id = "confirmation-view";
+
+    const confirmationBox = document.createElement("div");
+    confirmationBox.className = "cart-box";
+
+    const title = document.createElement("h2");
+    title.textContent = "Bookingbekræftelse";
+
+    const booking = document.createElement("p");
+    booking.innerHTML = `<strong>Bookingnummer: ${bookingNumber}</strong>`;
+
+    const bookingDate = new Date(reservation.dateOfReservation);
+
+    const reservationInfo = document.createElement("p");
+    reservationInfo.textContent =
+        "Booket: " + formatDate(bookingDate) +
+        " kl. " + formatTime(bookingDate);
+
+    const customerInfo = document.createElement("div");
+
+    customerInfo.innerHTML = `
+    <p>Fornavn: ${customer.firstName}</p>
+    <p>Efternavn: ${customer.lastName}</p>
+    <p>Email: ${customer.email}</p>
+    <p>Telefonnummer: ${customer.phoneNumber}</p>
+    <p>Virksomhedsnavn: ${customer.companyName}</p>
+    <p>CVR: ${customer.cvr}</p>
+    `;
+
+    const timeslots = reservation.timeslots;
+    const participants = timeslots[0].participants;
+
+    let start = new Date(timeslots[0].startTime);
+    let end = new Date(timeslots[0].endTime);
+
+    timeslots.forEach(t => {
+
+        const s = new Date(t.startTime);
+        const e = new Date(t.endTime);
+
+        if (s < start) start = s;
+        if (e > end) end = e;
+    });
+
+    const packageInfo = document.createElement("div");
+
+    const activityNames = new Set();
+
+    reservation.timeslots.forEach(t => {
+        activityNames.add(t.activity.name);
+    });
+
+    let activitiesHTML = "";
+
+    activityNames.forEach(name => {
+        activitiesHTML += `<p>${name}</p>`
+    })
+
+    packageInfo.innerHTML = `
+    <h3>Bookede aktiviteter</h3>
+    <p><strong>Pakke: ${packageName}</strong></p>
+    ${activitiesHTML}
+    <p>Dato: ${formatDate(start)}</p>
+    <p>Tidsrum: ${formatTime(start)} - ${formatTime(end)}</p>
+    <p>Antal deltagere: ${participants}</p>
+    <p><strong>Pris: ${reservation.price} DKK</strong></p>
+    `;
+
+    confirmationBox.appendChild(title);
+    confirmationBox.appendChild(booking);
+    confirmationBox.appendChild(reservationInfo);
+    confirmationBox.appendChild(customerInfo);
+    confirmationBox.appendChild(packageInfo);
+
+    main.appendChild(confirmationBox);
+    section.appendChild(main);
+    content.appendChild(main);
+}

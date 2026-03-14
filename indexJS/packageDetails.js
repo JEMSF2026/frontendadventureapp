@@ -1,5 +1,5 @@
 import{ renderPackages } from "./packages.js";
-import { renderPackageCalendar } from "./bookPackage.js";
+import { renderPackageCalendar } from "./packageBookingCalendar.js";
 
 export async function renderPackageDetails(id){
 
