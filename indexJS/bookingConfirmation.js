@@ -1,6 +1,6 @@
 import { formatDate, formatTime } from "./utils.js";
 
-export function renderConfirmation(bookingNumber, customer, cart, dateOfReservation){
+export function renderConfirmation(bookingNumber, customer, cart, dateOfReservation, participants){
 
     const content = document.querySelector(".content");
 
@@ -62,6 +62,7 @@ export function renderConfirmation(bookingNumber, customer, cart, dateOfReservat
         <p><strong>${item.activity.name}</strong></p>
         <p>Dato: ${formatDate(item.dayOfActivity)}</p>
         <p>Tidsrum: ${formatTime(item.startTime)} - ${formatTime(item.endTime)}</p>
+        <p>Antal deltagere: ${participants}</p>
         <p>Pris: ${item.activity.price} DKK</p>
         `;
 

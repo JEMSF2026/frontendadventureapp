@@ -170,6 +170,8 @@ function displayCart() {
 
         div.innerHTML = `
     <p>Aktivitet: ${item.activity.name}</p>
+    <p>Aldersgrænse: ${item.activity.minimumAge} år</p>
+    <p>Der er plads til ${item.activity.maxParticipants} deltagere</p>
     <p>Dato: ${formatDate(item.dayOfActivity)}</p>
     <p>Tidsrum: ${formatTime(item.startTime)} - ${formatTime(item.endTime)}</p>
     <p>Pris: ${item.activity.price} DKK</p>
@@ -266,7 +268,7 @@ async function bookActivity(){
 
     console.log(data)
 
-    renderConfirmation(data.bookingNumber, customer, cart, data.dateOfReservation);
+    renderConfirmation(data.bookingNumber, customer, cart, data.dateOfReservation, participants);
 
     localStorage.removeItem("cart");
     updateCartCount();
