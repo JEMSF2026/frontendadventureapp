@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="da">
 <head>
     <meta charset="UTF-8">
     <title>JEMS Adventure - Medarbejder Portal</title>
@@ -10,7 +10,7 @@
 </head>
 <body>
 
-<!-- Login skærm -->
+<!-- Login screen (shown until the employee authenticates) -->
 <div id="loginScreen">
     <header>
         <nav>
@@ -41,20 +41,21 @@
     </div>
 </div>
 
-<!-- Admin dashboard (skjult indtil login) -->
+<!-- Dashboard (hidden until login succeeds) -->
 <div id="dashboard" class="hidden">
     <header>
         <nav>
             <a class="logo" href="employee.html">JEMS Adventure</a>
             <ul class="nav-list">
                 <li class="nav-item">
-                    <a href="#" id="nav-udstyr" class="nav-active" onclick="showEquipment(event)">Udstyr</a>
+                    <!-- onclick removed — listeners are attached in employee.js -->
+                    <a href="#" id="nav-udstyr" class="nav-active">Udstyr</a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" id="nav-aktiviteter" onclick="showActivities(event)">Aktiviteter</a>
+                    <a href="#" id="nav-aktiviteter">Aktiviteter</a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" onclick="logout(event)" class="nav-logout">Log ud</a>
+                    <a href="#" id="nav-logout" class="nav-logout">Log ud</a>
                 </li>
             </ul>
         </nav>
@@ -63,8 +64,7 @@
     <div class="content"></div>
 </div>
 
-<script src="employeeJS/equipmentOverview.js"></script>
-<script src="employeeJS/activityManagement.js"></script>
-<script src="employeeJS/employee.js"></script>
+<!-- Single module entry point — imports config, equipmentOverview, and activityManagement -->
+<script type="module" src="employeeJS/employee.js"></script>
 </body>
 </html>

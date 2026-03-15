@@ -1,15 +1,25 @@
-import{ renderPackages } from "./packages.js";
+/**
+ * packageDetails.js
+ * Henter og viser detaljevisningen for én firmapakke.
+ */
+import { API_BASE_URL } from "./config.js";
+import { renderPackages } from "./packages.js";
 import { renderPackageCalendar } from "./packageBookingCalendar.js";
 
-export async function renderPackageDetails(id){
-
+/** Henter pakke via id og viser detaljevisningen. */
+export async function renderPackageDetails(id) {
     const content = document.querySelector(".content");
     content.innerHTML = "";
 
-    const main = document.createElement("main");
+    const response = await fetch(`${API_BASE_URL}/packages/${id}`);
+    const pkg = await response.json();
 
+    // Afbryd visning hvis pakken ikke har nogen aktiviteter
+    if (!pkg.activities || pkg.activities.length === 0) return;
+
+    const main = document.createElement("main");
     const wrapper = document.createElement("div");
-    wrapper.className = "package-details-wrapper"
+    wrapper.className = "package-details-wrapper";
 
     const section = document.createElement("section");
     section.id = "package-details";
@@ -17,12 +27,7 @@ export async function renderPackageDetails(id){
     const backButton = document.createElement("button");
     backButton.className = "back-button";
     backButton.textContent = "← tilbage til firmapakker";
-    backButton.addEventListener("click", () => {
-        renderPackages();
-    });
-
-    const response = await fetch(`http://localhost:8080/packages/${id}`);
-    const pkg = await response.json();
+    backButton.addEventListener("click", () => renderPackages());
 
     const title = document.createElement("h1");
     title.textContent = pkg.packageName;
@@ -33,49 +38,36 @@ export async function renderPackageDetails(id){
     section.appendChild(title);
     section.appendChild(description);
 
-    if (pkg.activities && pkg.activities.length > 0){
+    const activityTitle = document.createElement("h3");
+    activityTitle.textContent = "Aktiviteter i pakken";
+    section.appendChild(activityTitle);
 
-        const activityTitle = document.createElement("h3");
-        activityTitle.textContent = "Aktiviteter i pakken";
-
-        section.appendChild(activityTitle);
-
-        pkg.activities.forEach(activity => {
-
-            const div = document.createElement("div");
-            div.className = "package-activity";
-
-            div.innerHTML = `
+    pkg.activities.forEach(activity => {
+        const div = document.createElement("div");
+        div.className = "package-activity";
+        div.innerHTML = `
             <p><strong>${activity.name}</strong></p>
             <p>${activity.description}</p>
-            `;
+        `;
+        section.appendChild(div);
+    });
 
-            section.appendChild(div);
-        });
+    const priceContainer = document.createElement("div");
+    priceContainer.className = "package-price";
 
-        const priceContainer = document.createElement("div");
-        priceContainer.className = "package-price";
+    const price = document.createElement("h4");
+    price.textContent = `Pris: ${pkg.price} DKK`;
 
-        const price = document.createElement("h4");
-        price.textContent = `Pris: ${pkg.price} DKK`;
+    const bookButton = document.createElement("button");
+    bookButton.textContent = "Book pakke";
+    bookButton.addEventListener("click", () => renderPackageCalendar(id));
 
-        const button = document.createElement("button");
-        button.textContent = "Book pakke";
+    priceContainer.appendChild(price);
+    priceContainer.appendChild(bookButton);
+    section.appendChild(priceContainer);
 
-        button.addEventListener("click", () => {
-            renderPackageCalendar(id);
-        });
-
-        priceContainer.appendChild(price);
-        priceContainer.append(button);
-
-        section.appendChild(priceContainer);
-
-        wrapper.appendChild(backButton);
-        wrapper.appendChild(section);
-
-        main.appendChild(wrapper);
-        content.appendChild(main);
-
-    }
+    wrapper.appendChild(backButton);
+    wrapper.appendChild(section);
+    main.appendChild(wrapper);
+    content.appendChild(main);
 }

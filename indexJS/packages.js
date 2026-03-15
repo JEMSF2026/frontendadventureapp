@@ -1,12 +1,17 @@
+/**
+ * packages.js
+ * Henter og viser gitteret med firmapakker.
+ */
+import { API_BASE_URL } from "./config.js";
 import { renderPackageDetails } from "./packageDetails.js";
 
-export function renderPackages(){
-    const content = document.querySelector(".content");
 
+/** Viser firmapakke-sektionen i .content. */
+export function renderPackages() {
+    const content = document.querySelector(".content");
     content.innerHTML = "";
 
     const main = document.createElement("main");
-
     const section = document.createElement("section");
     section.id = "package-view";
 
@@ -19,28 +24,25 @@ export function renderPackages(){
     section.appendChild(title);
     section.appendChild(container);
     main.appendChild(section);
-
     content.appendChild(main);
 
     loadPackages();
 }
 
-async function loadPackages(){
-
+/** Henter alle pakker og udfylder gitteret. */
+async function loadPackages() {
     const container = document.querySelector(".package-container");
 
-    try{
-
-        const response = await fetch("http://localhost:8080/packages");
+    try {
+        const response = await fetch(`${API_BASE_URL}/packages`);
         const packages = await response.json();
 
-        if (packages.length === 0){
-            container.innerHTML = "<p>Ingen firmapakker fundet</p>"
+        if (packages.length === 0) {
+            container.innerHTML = "<p>Ingen firmapakker fundet</p>";
             return;
         }
 
         packages.forEach(pkg => {
-
             const div = document.createElement("div");
             div.className = "package-card";
 
@@ -55,23 +57,17 @@ async function loadPackages(){
 
             const button = document.createElement("button");
             button.textContent = "Læs mere";
-
-            button.addEventListener("click", () => {
-                renderPackageDetails(pkg.id);
-            });
+            button.addEventListener("click", () => renderPackageDetails(pkg.id));
 
             div.appendChild(name);
             div.appendChild(description);
             div.appendChild(price);
             div.appendChild(button);
-
             container.appendChild(div);
         });
-    } catch(error){
+    } catch (error) {
         console.error("Kunne ikke hente firmapakker", error);
     }
 }
 
-document.getElementById("packages-btn").addEventListener("click", () => {
-    renderPackages();
-});
+document.getElementById("packages-btn").addEventListener("click", () => renderPackages());

@@ -120,6 +120,9 @@ nav {
 }
 
 #cart-count {
+    position: absolute;
+    bottom: -6px;
+    left: -8px;
     background-color: #e63946;
     color: white;
     font-size: 0.7rem;
