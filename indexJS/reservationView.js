@@ -94,7 +94,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             try {
 
-                const response = await fetch(`${backendUrl}/${bookingNumber}`);
+                const response = await fetch(`${backendUrl}/reservation/${bookingNumber}`);
 
                 if (!response.ok) {
                     throw new Error("Reservation not found");
