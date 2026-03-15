@@ -65,7 +65,7 @@ document.addEventListener("DOMContentLoaded", () => {
             Dag: ${formatDate(ts.dayOfActivity)}<br>
             Tidsrum: ${formatTime(ts.startTime)} - ${formatTime(ts.endTime)}<br>
             Deltagere: ${ts.participants}<br>
-            Pris: ${ts.activity.price}
+            Pris: ${ts.activity.price} DKK
         `;
 
             timeslotSection.appendChild(div);
@@ -73,7 +73,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         const totalPrice = document.createElement("p");
-        totalPrice.innerHTML = `<strong>Samlet pris: ${reservation.price}</strong>`;
+        totalPrice.innerHTML = `<strong>Samlet pris: ${reservation.price} DKK</strong>`;
         timeslotSection.appendChild(totalPrice);
 
         container.appendChild(card);
