@@ -261,7 +261,9 @@ function addToCart(){
         activity: {
             id: selectedTimeslot.activity.id,
             name: selectedTimeslot.activity.name,
-            price: selectedTimeslot.activity.price
+            price: selectedTimeslot.activity.price,
+            minimumAge: selectedTimeslot.activity.minimumAge,
+            maxParticipants: selectedTimeslot.activity.maxParticipants
         },
         dayOfActivity: selectedTimeslot.dayOfActivity,
         startTime: selectedTimeslot.startTime,

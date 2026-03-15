@@ -1,3 +1,6 @@
+import{ renderPackages } from "./packages.js";
+import { renderPackageCalendar } from "./packageBookingCalendar.js";
+
 export async function renderPackageDetails(id){
 
     const content = document.querySelector(".content");
@@ -5,8 +8,18 @@ export async function renderPackageDetails(id){
 
     const main = document.createElement("main");
 
+    const wrapper = document.createElement("div");
+    wrapper.className = "package-details-wrapper"
+
     const section = document.createElement("section");
     section.id = "package-details";
+
+    const backButton = document.createElement("button");
+    backButton.className = "back-button";
+    backButton.textContent = "← tilbage til firmapakker";
+    backButton.addEventListener("click", () => {
+        renderPackages();
+    });
 
     const response = await fetch(`http://localhost:8080/packages/${id}`);
     const pkg = await response.json();
@@ -17,12 +30,8 @@ export async function renderPackageDetails(id){
     const description = document.createElement("p");
     description.textContent = pkg.description;
 
-    const price = document.createElement("h4");
-    price.textContent = `Pris: ${pkg.price} DKK`;
-
     section.appendChild(title);
     section.appendChild(description);
-    section.appendChild(price);
 
     if (pkg.activities && pkg.activities.length > 0){
 
@@ -44,7 +53,28 @@ export async function renderPackageDetails(id){
             section.appendChild(div);
         });
 
-        main.appendChild(section);
+        const priceContainer = document.createElement("div");
+        priceContainer.className = "package-price";
+
+        const price = document.createElement("h4");
+        price.textContent = `Pris: ${pkg.price} DKK`;
+
+        const button = document.createElement("button");
+        button.textContent = "Book pakke";
+
+        button.addEventListener("click", () => {
+            renderPackageCalendar(id);
+        });
+
+        priceContainer.appendChild(price);
+        priceContainer.append(button);
+
+        section.appendChild(priceContainer);
+
+        wrapper.appendChild(backButton);
+        wrapper.appendChild(section);
+
+        main.appendChild(wrapper);
         content.appendChild(main);
 
     }

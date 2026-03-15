@@ -1,6 +1,6 @@
 import { renderPackageDetails } from "./packageDetails.js";
 
-function renderPackages(){
+export function renderPackages(){
     const content = document.querySelector(".content");
 
     content.innerHTML = "";
