@@ -1,45 +1,24 @@
-/*
- * equipmentOverview.js – Udstyrsoversigt for medarbejderportalen
+/**
+ * equipmentOverview.js
+ * Udstyrsoversigt for medarbejderportalen.
+ * Viser en filtrerbar tabel over udstyr per aktivitet samt en formular til tilføjelse/redigering.
  *
- * Viser en tabel over udstyr filtreret på valgt aktivitet.
- * Indholdet renderes ind i .content-divven i employee.html.
- *
- * Funktioner eksponeret globalt (bruges af employee.js):
- *   - createLayout()    → bygger HTML-skelettet (dropdown + tabel) i .content
- *   - loadActivities()  → henter aktiviteter fra backend og fylder dropdown
- *
- * Internt kald-flow:
- *   DOMContentLoaded → createLayout() → loadActivities() → loadEquipment()
- *   Bruger skifter dropdown              → loadEquipment()
- *   Bruger klikker "Udstyr" i nav        → createLayout() + loadActivities() (via employee.js)
+ * Eksporterer:
+ *   createLayout()   — bygger HTML-skelettet i .content
+ *   loadActivities() — henter aktiviteter og udfylder filter-dropdown'en
  */
+import { apiBaseUrl } from "./config.js";
 
-const apiBaseUrl = "http://localhost:8080";
-
-/*
- * Kører automatisk når siden er loadet.
- * Sætter udstyrsoversigten op som standard-visning i dashboardet.
- * Bemærk: .content eksisterer i DOM'en selv når #dashboard er skjult,
- * så denne kørsel sker korrekt i baggrunden mens login-skærmen vises.
+/**
+ * Skriver udstyrsstabel-skelettet og formular-skelettet ind i .content.
+ * Bruger event delegation på #tableView så rediger/slet-knapper fungerer
+ * uden at kræve globale funktionsreferencer.
  */
-document.addEventListener("DOMContentLoaded", () => {
-    createLayout();
-    loadActivities();
-});
-
-/*
- * createLayout()
- * Skriver HTML-skelettet for udstyrsoversigten ind i .content.
- * Tilføjer en change-event listener på dropdown, så udstyr opdateres
- * automatisk når brugeren vælger en anden aktivitet.
- * Kaldes også af showEquipment() i employee.js ved nav-skift tilbage til "Udstyr".
- */
-function createLayout() {
+export function createLayout() {
     const content = document.querySelector(".content");
 
     content.innerHTML = `
     <div id="tableView">
-
         <h1>Udstyrsoversigt</h1>
 
         <label for="activityDropdown">Vælg aktivitet:</label>
@@ -49,21 +28,19 @@ function createLayout() {
 
         <table id="equipmentTable">
             <thead>
-            <tr>
-                <th>Navn</th>
-                <th>Status</th>
-                <th>Beskrivelse</th>
-                <th>Administrér udstyr</th>
-            </tr>
+                <tr>
+                    <th>Navn</th>
+                    <th>Status</th>
+                    <th>Beskrivelse</th>
+                    <th>Administrér udstyr</th>
+                </tr>
             </thead>
             <tbody></tbody>
         </table>
-
     </div>
 
     <div id="formView" class="form-container" style="display:none">
-
-        <h2 id="formTitle">Tilføj nyt udstyr</h2> 
+        <h2 id="formTitle">Tilføj nyt udstyr</h2>
 
         <label>Navn</label>
         <input type="text" id="equipmentName">
@@ -81,7 +58,6 @@ function createLayout() {
             <button id="saveEquipmentBtn">Gem</button>
             <button id="cancelBtn">Annuller</button>
         </div>
-
     </div>
     `;
 
@@ -89,16 +65,22 @@ function createLayout() {
     document.getElementById("addEquipmentBtn").addEventListener("click", showForm);
     document.getElementById("saveEquipmentBtn").addEventListener("click", saveEquipment);
     document.getElementById("cancelBtn").addEventListener("click", showTable);
+
+    // Event delegation — håndterer rediger/slet for alle rækker uden at forurene det globale scope
+    document.getElementById("tableView").addEventListener("click", e => {
+        const btn = e.target.closest("button[data-action]");
+        if (!btn) return;
+        const id = Number(btn.dataset.id);
+        if (btn.dataset.action === "edit") editEquipment(id);
+        if (btn.dataset.action === "delete") deleteEquipment(id);
+    });
 }
 
-/*
- * loadActivities()
- * Henter alle aktiviteter fra GET /activities og fylder dropdown-menuen.
- * Vælger automatisk den første aktivitet og kalder loadEquipment()
- * så tabellen ikke er tom ved første visning.
- * Kaldes også af showEquipment() i employee.js ved nav-skift tilbage til "Udstyr".
+/**
+ * Henter alle aktiviteter fra backend og udfylder filter-dropdown'en.
+ * Vælger automatisk den første aktivitet og indlæser dens udstyr.
  */
-async function loadActivities() {
+export async function loadActivities() {
     try {
         const response = await fetch(`${apiBaseUrl}/activities`);
         const activities = await response.json();
@@ -113,27 +95,22 @@ async function loadActivities() {
             dropdown.appendChild(option);
         });
 
-        // Auto-loader første aktivitets udstyr så tabellen ikke er tom ved start
+        // Indlæs den første aktivitets udstyr automatisk så tabellen ikke er tom ved start
         if (activities.length > 0) {
             dropdown.value = activities[0].id;
             loadEquipment();
         }
-
     } catch (error) {
-        console.error("Error loading activities:", error);
+        console.error("Fejl ved indlæsning af aktiviteter:", error);
     }
 }
 
-/*
- * loadEquipment()
- * Henter udstyr for den valgte aktivitet fra GET /equipment/{activityId}
- * og bygger tabel-rækker i #equipmentTable.
- * Status-farver sættes via CSS-klasser:
+/**
+ * Henter udstyr for den valgte aktivitet og bygger tabelrækker.
+ * Status mappes til en CSS-klasse:
  *   "Active"       → status-green  (grøn)
- *   "Reparation"   → status-yellow (gul/orange)
+ *   "Reparation"   → status-yellow (gul)
  *   "Out of Order" → status-red    (rød)
- * Kaldes automatisk ved dropdown-skift (event listener sat i createLayout)
- * og ved første load via loadActivities().
  */
 async function loadEquipment() {
     const activityId = document.getElementById("activityDropdown").value;
@@ -148,57 +125,60 @@ async function loadEquipment() {
 
         equipmentList.forEach(eq => {
             const status = eq.equipmentState ? eq.equipmentState.name : "Ukendt";
-            let statusClass = "";
-
-            if (status === "Active") statusClass = "status-green";
-            if (status === "Reparation") statusClass = "status-yellow";
-            if (status === "Out of Order") statusClass = "status-red";
+            const statusClass =
+                status === "Active"        ? "status-green"  :
+                status === "Reparation"    ? "status-yellow" :
+                status === "Out of Order"  ? "status-red"    : "";
 
             const row = document.createElement("tr");
             row.innerHTML = `
                 <td>${eq.name}</td>
                 <td class="${statusClass}">${status}</td>
-                <td>${eq.description ? eq.description : ""}</td>
+                <td>${eq.description ?? ""}</td>
                 <td>
-                <button onclick="editEquipment(${eq.id})">Redigér</button>
-                <button onclick="deleteEquipment(${eq.id})">Slet</button>
+                    <button data-action="edit"   data-id="${eq.id}">Redigér</button>
+                    <button data-action="delete" data-id="${eq.id}">Slet</button>
                 </td>
             `;
-
             tableBody.appendChild(row);
         });
-
     } catch (error) {
-        console.error("Error loading equipment:", error);
+        console.error("Fejl ved indlæsning af udstyr:", error);
     }
 }
 
+/** Viser tilføj-udstyr-formularen med tomme felter. */
 async function showForm() {
     await loadActivitiesForForm();
     await loadEquipmentStates();
 
     document.getElementById("equipmentName").value = "";
     document.getElementById("equipmentDescription").value = "";
-    document.getElementById("cancelBtn").textContent = "Annuller";
-    document.getElementById("saveEquipmentBtn").textContent = "Gem";
     document.getElementById("formTitle").textContent = "Tilføj nyt udstyr";
+    document.getElementById("saveEquipmentBtn").textContent = "Gem";
+
+    // Gendan standard gem-handler (i tilfælde af at en redigeringssession var aktiv)
+    const saveBtn = document.getElementById("saveEquipmentBtn");
+    saveBtn.replaceWith(saveBtn.cloneNode(true));
+    document.getElementById("saveEquipmentBtn").addEventListener("click", saveEquipment);
+
     document.getElementById("tableView").style.display = "none";
     document.getElementById("formView").style.display = "flex";
 }
 
-
+/** Skjuler formularen og viser udstyrstabellen. */
 function showTable() {
     document.getElementById("formView").style.display = "none";
     document.getElementById("tableView").style.display = "block";
 }
 
+/** Udfylder aktivitets-dropdown'en inde i tilføj/rediger-formularen. */
 async function loadActivitiesForForm() {
     const response = await fetch(`${apiBaseUrl}/activities`);
     const activities = await response.json();
 
     const dropdown = document.getElementById("activitySelect");
     dropdown.innerHTML = "";
-
     activities.forEach(activity => {
         const option = document.createElement("option");
         option.value = activity.id;
@@ -207,13 +187,13 @@ async function loadActivitiesForForm() {
     });
 }
 
+/** Henter alle udstyrstilstande (Active, Reparation, Out of Order) ind i status-dropdown'en. */
 async function loadEquipmentStates() {
     const response = await fetch(`${apiBaseUrl}/equipmentStates`);
     const states = await response.json();
 
     const dropdown = document.getElementById("stateSelect");
     dropdown.innerHTML = "";
-
     states.forEach(state => {
         const option = document.createElement("option");
         option.value = state.id;
@@ -222,6 +202,7 @@ async function loadEquipmentStates() {
     });
 }
 
+/** Læser formularen og opretter en ny udstyrspost via POST. */
 async function saveEquipment() {
     const name = document.getElementById("equipmentName").value;
     const description = document.getElementById("equipmentDescription").value;
@@ -236,14 +217,14 @@ async function saveEquipment() {
     const equipment = {
         name,
         description,
-        activity: {id: parseInt(activityId)},
-        equipmentState: {id: parseInt(stateId)}
+        activity: { id: parseInt(activityId) },
+        equipmentState: { id: parseInt(stateId) }
     };
 
     try {
         const response = await fetch(`${apiBaseUrl}/equipment/save`, {
             method: "POST",
-            headers: {"Content-Type": "application/json"},
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(equipment)
         });
 
@@ -255,18 +236,15 @@ async function saveEquipment() {
         alert("Udstyr gemt!");
         showTable();
         loadEquipment();
-
     } catch (error) {
-        console.error("Error saving equipment:", error);
+        console.error("Fejl ved gem af udstyr:", error);
         alert("Kunne ikke gemme udstyr: " + error.message);
     }
 }
 
+/** Bekræfter og sletter en udstyrspost via id. */
 async function deleteEquipment(equipmentId) {
-
-    if (!confirm("Er du sikker på du vil slette udstyret?")) {
-        return;
-    }
+    if (!confirm("Er du sikker på du vil slette udstyret?")) return;
 
     try {
         const response = await fetch(`${apiBaseUrl}/equipment/delete/${equipmentId}`, {
@@ -279,50 +257,47 @@ async function deleteEquipment(equipmentId) {
         }
 
         loadEquipment();
-
     } catch (error) {
-        console.error("Error deleting equipment:", error);
+        console.error("Fejl ved sletning af udstyr:", error);
         alert("Fejl ved sletning: " + error.message);
     }
 }
 
+/**
+ * Henter udstyrsposten via id, udfylder formularen med eksisterende værdier,
+ * og kobler gem-knappen til updateEquipment i stedet for saveEquipment.
+ * Bruger replaceWith(cloneNode) til at skifte click-lytter rent.
+ */
 async function editEquipment(equipmentId) {
     try {
-        // Hent equipment fra backend
         const response = await fetch(`${apiBaseUrl}/equipment/${equipmentId}`);
         const equipment = await response.json();
 
         await loadActivitiesForForm();
         await loadEquipmentStates();
 
-        // Vis formen
-        document.getElementById("tableView").style.display = "none";
-        document.getElementById("formView").style.display = "flex";
-
-        // Fyld felter
         document.getElementById("equipmentName").value = equipment.name;
         document.getElementById("equipmentDescription").value = equipment.description;
         document.getElementById("activitySelect").value = equipment.activity.id;
         document.getElementById("stateSelect").value = equipment.equipmentState.id;
 
-        // Skift knap tekst og event
+        document.getElementById("formTitle").textContent = "Redigér udstyr";
+
+        // Skift gem-handleren så "Gem" kalder opdatering i stedet for oprettelse
         const saveBtn = document.getElementById("saveEquipmentBtn");
         saveBtn.textContent = "Opdatér";
-        const formTitle = document.getElementById("formTitle");
-        formTitle.textContent = "Redigér udstyr";
-
-        // Fjern gamle event listeners
         saveBtn.replaceWith(saveBtn.cloneNode(true));
-        const newBtn = document.getElementById("saveEquipmentBtn");
+        document.getElementById("saveEquipmentBtn").addEventListener("click", () => updateEquipment(equipmentId));
 
-        newBtn.addEventListener("click", () => updateEquipment(equipmentId));
-
+        document.getElementById("tableView").style.display = "none";
+        document.getElementById("formView").style.display = "flex";
     } catch (error) {
-        console.error("Error loading equipment for edit:", error);
+        console.error("Fejl ved indlæsning af udstyr til redigering:", error);
         alert("Kunne ikke indlæse udstyr til redigering");
     }
 }
 
+/** Læser formularen og opdaterer udstyrsposten via PUT. */
 async function updateEquipment(equipmentId) {
     const name = document.getElementById("equipmentName").value;
     const description = document.getElementById("equipmentDescription").value;
@@ -356,9 +331,8 @@ async function updateEquipment(equipmentId) {
         alert("Udstyr opdateret!");
         showTable();
         loadEquipment();
-
     } catch (error) {
-        console.error("Error updating equipment:", error);
+        console.error("Fejl ved opdatering af udstyr:", error);
         alert("Kunne ikke opdatere udstyr: " + error.message);
     }
 }

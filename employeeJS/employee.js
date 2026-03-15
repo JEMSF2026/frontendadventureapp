@@ -1,25 +1,19 @@
-/*
- * employee.js – Hoved-controller for medarbejderportalen (employee.html)
+/**
+ * employee.js – Indgangspunkt for medarbejderportalen (employee.html)
  *
- * Denne fil styrer to ting:
- *   1. Login-flowet: sender credentials til backend og skifter mellem login-skærm og dashboard
- *   2. Navigation i dashboardet: skifter indhold i .content-divven mellem de to sektioner
+ * Ansvarsområder:
+ *   1. Login-flow: send legitimationsoplysninger → vis/skjul login-skærm vs. dashboard
+ *   2. Dashboard-navigation: skift mellem Udstyr og Aktivitetsstyring
  *
- * Afhængigheder (indlæses i employee.html før denne fil):
- *   - equipmentOverview.js  → eksponerer createLayout(), loadActivities() og apiBaseUrl
- *   - activityManagement.js → eksponerer showActivityManagement()
- *
+ * Al øvrig funktionalitet importeres fra equipmentOverview.js og activityManagement.js.
  */
+import { apiBaseUrl } from "./config.js";
+import { createLayout, loadActivities } from "./equipmentOverview.js";
+import { showActivityManagement } from "./activityManagement.js";
 
-/*
- * Login-handler
- * Lytter på submit-eventet fra #loginForm i employee.html.
- * Sender email + password som JSON til POST /auth/login.
- *   - 200 OK        → skjuler #loginScreen, viser #dashboard
- *   - 401           → viser fejlbesked til brugeren
- *   - Netværksfejl  → viser "Kunne ikke oprette forbindelse" fejlbesked
- */
-document.getElementById("loginForm").addEventListener("submit", async function (e) {
+// --- Login ---
+
+document.getElementById("loginForm").addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const email = document.getElementById("email").value;
@@ -38,23 +32,19 @@ document.getElementById("loginForm").addEventListener("submit", async function (
             document.getElementById("loginScreen").classList.add("hidden");
             document.getElementById("dashboard").classList.remove("hidden");
         } else {
+            // 401 Unauthorized — vis den statiske fejlbesked der allerede er i HTML'en
             errorEl.classList.remove("hidden");
         }
-    } catch (error) {
-        console.error("Login fejlede:", error);
+    } catch (err) {
+        console.error("Login fejlede:", err);
         errorEl.textContent = "Kunne ikke oprette forbindelse til serveren";
         errorEl.classList.remove("hidden");
     }
 });
 
-/*
- * showEquipment(e)
- * Kaldt fra onclick på "Udstyr"-linket i nav (employee.html).
- * Markerer "Udstyr" som aktiv i nav og gengiver udstyrsoversigten.
- *   → createLayout()    defineret i equipmentOverview.js – bygger tabel-HTML i .content
- *   → loadActivities()  defineret i equipmentOverview.js – henter aktiviteter fra backend
- *                        og fylder dropdown, som derefter auto-loader udstyr
- */
+// --- Dashboard-navigation ---
+
+/** Aktiverer udstyrsoversigten og markerer nav-linket som aktivt. */
 function showEquipment(e) {
     e.preventDefault();
     setActiveNav("nav-udstyr");
@@ -62,24 +52,14 @@ function showEquipment(e) {
     loadActivities();
 }
 
-/*
- * showActivities(e)
- * Kaldt fra onclick på "Aktiviteter"-linket i nav (employee.html).
- * Markerer "Aktiviteter" som aktiv i nav og viser aktivitetsstyringssiden.
- *   → showActivityManagement()  defineret i activityManagement.js – overskriver .content
- *                                med placeholder-visningen (funktion ikke implementeret endnu)
- */
+/** Aktiverer aktivitetsstyringen og markerer nav-linket som aktivt. */
 function showActivities(e) {
     e.preventDefault();
     setActiveNav("nav-aktiviteter");
     showActivityManagement();
 }
 
-/*
- * logout(e)
- * Kaldt fra onclick på "Log ud"-linket i nav (employee.html).
- * Skjuler dashboardet, viser login-skærmen igen og nulstiller loginformularen.
- */
+/** Logger medarbejderen ud: skjuler dashboard og viser login-skærmen igen. */
 function logout(e) {
     e.preventDefault();
     document.getElementById("dashboard").classList.add("hidden");
@@ -87,16 +67,17 @@ function logout(e) {
     document.getElementById("loginForm").reset();
 }
 
-/*
- * setActiveNav(activeId)
- * Hjælpefunktion kaldt af showEquipment() og showActivities().
- * Fjerner .nav-active fra alle nav-links og sætter den på det valgte element,
- * så den aktive sektion er visuelt markeret i nav-baren.
- */
+/** Flytter .nav-active-klassen til det angivne nav-link-id. */
 function setActiveNav(activeId) {
-    document.querySelectorAll(".nav-list .nav-item a").forEach(a => {
-        a.classList.remove("nav-active");
-    });
-    const el = document.getElementById(activeId);
-    if (el) el.classList.add("nav-active");
+    document.querySelectorAll(".nav-list .nav-item a").forEach(a => a.classList.remove("nav-active"));
+    document.getElementById(activeId)?.classList.add("nav-active");
 }
+
+// Tilknyt nav-lyttere (erstatter de inline onclick-attributter fra employee.html)
+document.getElementById("nav-udstyr").addEventListener("click", showEquipment);
+document.getElementById("nav-aktiviteter").addEventListener("click", showActivities);
+document.getElementById("nav-logout").addEventListener("click", logout);
+
+// Vis udstyrsoversigten som standardvisning ved sideindlæsning
+createLayout();
+loadActivities();

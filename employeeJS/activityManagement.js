@@ -1,25 +1,29 @@
-/*
- * activityManagement.js – Aktivitetsstyring for medarbejderportalen
+/**
+ * activityManagement.js
+ * Aktivitets- og tidsrum-CRUD-visning for medarbejderportalen.
  *
- * Eksponerer showActivityManagement() globalt.
- * Funktionen kaldes af showActivities() i employee.js
- * når medarbejderen klikker på "Aktiviteter" i nav-baren.
+ * Eksporterer:
+ *   showActivityManagement() — indgangspunkt kaldt af employee.js ved nav-klik
  *
- * Kald-flow:
+ * Kaldflow:
  *   showActivityManagement() → loadActivityList()
- *   Klik på aktivitet        → showActivityDetails(activity)  → loadTimeslots(activityId)
- *   Klik "Tilføj tidsrum"    → showTimeslotForm(activityId)
- *   Submit tidsrum-formular  → submitTimeslot(e, activityId)  → loadTimeslots(activityId)
+ *   Klik aktivitet           → showActivityDetails(activity) → loadTimeslots(id)
+ *   Klik "Tilføj tidsrum"   → showTimeslotForm(id)
+ *   Indsend tidsrumformular  → submitTimeslot(e, id) → loadTimeslots(id)
+ *   Klik "Rediger"          → showEditActivityForm(id)
+ *   Klik "Slet aktivitet"   → deleteActivity(id, name)
+ *   Klik "Slet" (tidsrum)   → deleteTimeslot(timeslotId, activityId)
  */
+import { apiBaseUrl } from "./config.js";
+// Genbruger den fælles formatTime fra den offentlige utils — virker med alle ISO-strenge
+import { formatTime } from "../indexJS/utils.js";
 
-/*
- * showActivityManagement()
- * Bygger grundlæggende HTML-skelet med en aktivitetsliste og et detalje-panel.
- * Venstre panel indeholder en "Opret ny aktivitet"-knap øverst og listen nedenunder.
- * Kalder loadActivityList() for at hente og vise alle aktiviteter.
- * Kaldes af showActivities() i employee.js.
+/**
+ * Bygger det to-søjlede aktivitetsstyringslayout.
+ * Bruger event delegation på #activityDetailPanel så dynamisk indsatte knapper
+ * ikke kræver globale funktionsreferencer.
  */
-function showActivityManagement() {
+export function showActivityManagement() {
     const content = document.querySelector(".content");
     content.innerHTML = `
         <div class="activity-management-section">
@@ -36,14 +40,26 @@ function showActivityManagement() {
     `;
 
     document.getElementById("showCreateActivityBtn").addEventListener("click", showCreateActivityForm);
+
+    // Én delegeret lytter håndterer alle handlinger inde i detailpanelet —
+    // ingen globale funktioner nødvendige selv om panel-HTML'en erstattes hyppigt.
+    document.getElementById("activityDetailPanel").addEventListener("click", e => {
+        const btn = e.target.closest("button[data-action]");
+        if (!btn) return;
+
+        const action = btn.dataset.action;
+        const id = Number(btn.dataset.id);
+
+        if (action === "edit-activity")        showEditActivityForm(id);
+        if (action === "delete-activity")      deleteActivity(id, btn.dataset.name);
+        if (action === "show-timeslot-form")   showTimeslotForm(Number(btn.dataset.activityId));
+        if (action === "delete-timeslot")      deleteTimeslot(id, Number(btn.dataset.activityId));
+    });
+
     loadActivityList();
 }
 
-/*
- * loadActivityList()
- * Henter alle aktiviteter fra GET /activities og bygger listen i #activityList.
- * Hvert listeelement får en click-handler der kalder showActivityDetails(activity).
- */
+/** Henter alle aktiviteter og viser dem som klikbare listeelementer. */
 async function loadActivityList() {
     const listEl = document.getElementById("activityList");
     try {
@@ -69,12 +85,7 @@ async function loadActivityList() {
     }
 }
 
-/*
- * showCreateActivityForm()
- * Viser formularen til at oprette en ny aktivitet i detalje-panelet til højre.
- * Markerer "Opret ny aktivitet"-knappen som aktiv og fjerner markering fra aktivitetslisten.
- * Submit-eventet binder til createActivity(e).
- */
+/** Viser opret-aktivitet-formularen i det højre detailpanel. */
 function showCreateActivityForm() {
     document.querySelectorAll(".activity-list-item").forEach(el => el.classList.remove("active"));
     document.getElementById("showCreateActivityBtn").classList.add("active");
@@ -115,13 +126,7 @@ function showCreateActivityForm() {
     document.getElementById("createActivityForm").addEventListener("submit", createActivity);
 }
 
-/*
- * createActivity(e)
- * Kaldes ved submit af #createActivityForm.
- * Sender name og description som JSON til POST /activities.
- *   - 201 Created → viser bekræftelse, nulstiller formularen og genindlæser aktivitetslisten
- *   - Fejl        → viser fejlbesked til brugeren
- */
+/** Opretter en ny aktivitet via POST og genindlæser listen ved succes. */
 async function createActivity(e) {
     e.preventDefault();
 
@@ -160,11 +165,10 @@ async function createActivity(e) {
     }
 }
 
-/*
- * showActivityDetails(activity)
- * Viser detaljer for den valgte aktivitet i #activityDetailPanel.
- * Kalder loadTimeslots(activity.id) for at hente eksisterende tidsrum.
- * "Tilføj tidsrum"-knappen kalder showTimeslotForm(activity.id).
+/**
+ * Viser aktivitetsdetailkortet.
+ * Knapper bruger data-action-attributter — håndteres af den delegerede lytter
+ * sat op i showActivityManagement().
  */
 function showActivityDetails(activity) {
     const panel = document.getElementById("activityDetailPanel");
@@ -174,24 +178,30 @@ function showActivityDetails(activity) {
             <div class="activity-detail-header">
                 <h2>${activity.name}</h2>
                 <div class="activity-detail-actions">
-                    <button class="edit-activity-btn" onclick="showEditActivityForm(${activity.id})">Rediger aktivitet</button>
-                    <button class="delete-activity-btn" onclick="deleteActivity(${activity.id}, '${activity.name.replace(/'/g, "\\'")}')">Slet aktivitet</button>
+                    <button class="edit-activity-btn"
+                            data-action="edit-activity"
+                            data-id="${activity.id}">Rediger aktivitet</button>
+                    <button class="delete-activity-btn"
+                            data-action="delete-activity"
+                            data-id="${activity.id}"
+                            data-name="${activity.name.replace(/"/g, "&quot;")}">Slet aktivitet</button>
                 </div>
             </div>
             <p class="activity-detail-description">${activity.description || ""}</p>
             <div class="activity-detail-meta">
-                ${activity.price != null           ? `<span>Pris: ${activity.price} kr.</span>` : ""}
-                ${activity.durationMinutes != null  ? `<span>Varighed: ${activity.durationMinutes} min.</span>` : ""}
-                ${activity.minimumAge != null       ? `<span>Minimumsalder: ${activity.minimumAge} år</span>` : ""}
-                ${activity.maxParticipants != null  ? `<span>Maks deltagere: ${activity.maxParticipants}</span>` : ""}
+                ${activity.price != null          ? `<span>Pris: ${activity.price} kr.</span>` : ""}
+                ${activity.durationMinutes != null ? `<span>Varighed: ${activity.durationMinutes} min.</span>` : ""}
+                ${activity.minimumAge != null      ? `<span>Minimumsalder: ${activity.minimumAge} år</span>` : ""}
+                ${activity.maxParticipants != null ? `<span>Maks deltagere: ${activity.maxParticipants}</span>` : ""}
             </div>
 
             <h3>Tidsrum</h3>
             <div id="timeslotList"></div>
 
-            <button class="submit-btn add-timeslot-btn" onclick="showTimeslotForm(${activity.id})">
-                Tilføj tidsrum
-            </button>
+            <button class="submit-btn add-timeslot-btn"
+                    data-action="show-timeslot-form"
+                    data-activity-id="${activity.id}">Tilføj tidsrum</button>
+
             <div id="timeslotFormContainer"></div>
         </div>
     `;
@@ -199,12 +209,7 @@ function showActivityDetails(activity) {
     loadTimeslots(activity.id);
 }
 
-/*
- * loadTimeslots(activityId)
- * Henter tidsrum for aktiviteten fra GET /timeslots/{activityId}
- * og viser dem som en liste i #timeslotList.
- * Kaldes ved visning af aktivitetsdetaljer og efter oprettelse af nyt tidsrum.
- */
+/** Henter og viser tidsrumtabellen for den angivne aktivitet. */
 async function loadTimeslots(activityId) {
     const listEl = document.getElementById("timeslotList");
     listEl.innerHTML = "<p>Henter tidsrum...</p>";
@@ -225,6 +230,7 @@ async function loadTimeslots(activityId) {
                         <th>Dato</th>
                         <th>Start</th>
                         <th>Slut</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -234,7 +240,9 @@ async function loadTimeslots(activityId) {
                             <td>${formatTime(ts.startTime)}</td>
                             <td>${formatTime(ts.endTime)}</td>
                             <td>
-                            <button onclick="deleteTimeslot(${ts.id}, ${activityId})">Slet</button>
+                                <button data-action="delete-timeslot"
+                                        data-id="${ts.id}"
+                                        data-activity-id="${activityId}">Slet</button>
                             </td>
                         </tr>
                     `).join("")}
@@ -247,21 +255,7 @@ async function loadTimeslots(activityId) {
     }
 }
 
-/*
- * formatTime(datetimeString)
- * Hjælpefunktion der formaterer en ISO datetime-streng til "HH:MM".
- * Eksempel: "2026-03-20T10:00:00" → "10:00"
- */
-function formatTime(datetimeString) {
-    if (!datetimeString) return "";
-    return datetimeString.substring(11, 16);
-}
-
-/*
- * showTimeslotForm(activityId)
- * Indsætter formularen til oprettelse af tidsrum i #timeslotFormContainer.
- * Submit-eventet binder til submitTimeslot(e, activityId).
- */
+/** Viser tilføj-tidsrum-formularen inde i #timeslotFormContainer. */
 function showTimeslotForm(activityId) {
     const container = document.getElementById("timeslotFormContainer");
     container.innerHTML = `
@@ -287,15 +281,33 @@ function showTimeslotForm(activityId) {
         </div>
     `;
 
-    document.getElementById("addTimeslotForm").addEventListener("submit", (e) => submitTimeslot(e, activityId));
+    document.getElementById("addTimeslotForm").addEventListener("submit", e => submitTimeslot(e, activityId));
 }
 
-/*
- * deleteActivity(activityId, activityName)
- * Sletter aktiviteten permanent via DELETE /activities/delete/{activityId}.
- * Beder brugeren om bekræftelse inden sletning.
- *   - 200 OK → skjuler detalje-panelet og genindlæser aktivitetslisten
- *   - Fejl   → viser alert med fejlbesked
+/** Bekræfter og sletter et tidsrum via DELETE. Adviserer brugeren hvis tidsrummet allerede er reserveret. */
+async function deleteTimeslot(timeslotId, activityId) {
+    if (!confirm("Er du sikker på du vil slette timeslottet?")) return;
+
+    try {
+        const response = await fetch(`${apiBaseUrl}/timeslot/delete/${timeslotId}`, {
+            method: "DELETE"
+        });
+
+        if (!response.ok) {
+            const text = await response.text();
+            throw new Error(text);
+        }
+
+        loadTimeslots(activityId);
+    } catch (error) {
+        console.error("Fejl ved sletning af tidsrum:", error);
+        alert("Fejl ved sletning — timeslottet er sandsynligvis reserveret: " + error.message);
+    }
+}
+
+/**
+ * Bekræfter og sletter en aktivitet via DELETE.
+ * Et 409-svar betyder at aktiviteten har eksisterende reservationer og ikke kan slettes.
  */
 async function deleteActivity(activityId, activityName) {
     if (!confirm(`Er du sikker på, at du vil slette "${activityName}"? Denne handling kan ikke fortrydes.`)) {
@@ -314,8 +326,8 @@ async function deleteActivity(activityId, activityName) {
             document.querySelectorAll(".activity-list-item").forEach(el => el.classList.remove("active"));
             loadActivityList();
         } else if (response.status === 409) {
-            const message = await response.text();
-            alert(message);
+            // Backend returnerer en beskrivende besked når sletning er blokeret af reservationer
+            alert(await response.text());
         } else {
             alert("Noget gik galt. Aktiviteten kunne ikke slettes.");
         }
@@ -325,12 +337,7 @@ async function deleteActivity(activityId, activityName) {
     }
 }
 
-/*
- * showEditActivityForm(activityId)
- * Henter aktiviteten fra GET /activities/{activityId} og viser en redigeringsformular
- * i detalje-panelet med de eksisterende værdier forudfyldt.
- * Kaldes ved klik på "Rediger aktivitet"-knappen i showActivityDetails().
- */
+/** Henter aktiviteten og viser en redigeringsformular forudfyldt med eksisterende værdier. */
 async function showEditActivityForm(activityId) {
     try {
         const response = await fetch(`${apiBaseUrl}/activities/${activityId}`);
@@ -369,19 +376,13 @@ async function showEditActivityForm(activityId) {
             </div>
         `;
 
-        document.getElementById("editActivityForm").addEventListener("submit", (e) => updateActivity(e, activityId));
+        document.getElementById("editActivityForm").addEventListener("submit", e => updateActivity(e, activityId));
     } catch (error) {
         console.error("Fejl ved hentning af aktivitet:", error);
     }
 }
 
-/*
- * updateActivity(e, activityId)
- * Kaldes ved submit af #editActivityForm.
- * Sender opdaterede aktivitetsoplysninger som JSON til PUT /activities/update/{activityId}.
- *   - 200 OK → viser bekræftelse, genindlæser aktivitetslisten og viser de opdaterede detaljer
- *   - Fejl   → viser fejlbesked til brugeren
- */
+/** Opdaterer aktivitetsdata via PUT og viser den opdaterede detailvisning ved succes. */
 async function updateActivity(e, activityId) {
     e.preventDefault();
 
@@ -408,6 +409,7 @@ async function updateActivity(e, activityId) {
             successEl.textContent = `Aktiviteten "${updated.name}" blev opdateret.`;
             successEl.classList.remove("hidden");
             loadActivityList();
+            // Kort forsinkelse så brugeren ser succesmeddelelsen inden visningen skifter
             setTimeout(() => showActivityDetails(updated), 1500);
         } else {
             errorEl.textContent = "Noget gik galt. Prøv igen.";
@@ -420,13 +422,7 @@ async function updateActivity(e, activityId) {
     }
 }
 
-/*
- * submitTimeslot(e, activityId)
- * Kaldes ved submit af #addTimeslotForm.
- * Sender tidsrum-data som JSON til POST /timeslots.
- *   - 201 Created → viser bekræftelse og genindlæser tidsrum-listen
- *   - Fejl        → viser fejlbesked
- */
+/** Opretter et nyt tidsrum via POST og genindlæser listen ved succes. */
 async function submitTimeslot(e, activityId) {
     e.preventDefault();
 
@@ -441,7 +437,7 @@ async function submitTimeslot(e, activityId) {
         endTime: document.getElementById("endTime").value,
         participants: 0,
         activity: { id: activityId },
-        employee: { id: 1 }
+        employee: { id: 1 } // TODO: erstat med den indloggede medarbejders id
     };
 
     try {
@@ -464,30 +460,5 @@ async function submitTimeslot(e, activityId) {
         console.error("Fejl ved oprettelse af tidsrum:", error);
         errorEl.textContent = "Kunne ikke oprette forbindelse til serveren.";
         errorEl.classList.remove("hidden");
-    }
-}
-
-async function deleteTimeslot(timeslotId, activityId) {
-
-    if (!confirm("Er du sikker på du vil slette timeslottet?")) {
-        return;
-    }
-
-    try {
-        const response = await fetch(`${apiBaseUrl}/timeslot/delete/${timeslotId}`, {
-            method: "DELETE"
-        });
-
-        if (!response.ok) {
-            const text = await response.text();
-            throw new Error(text);
-        }
-
-
-        loadTimeslots(activityId);
-
-    } catch (error) {
-        console.error("Error deleting timeslot:", error);
-        alert("Fejl ved sletning, fordi timeslottet er reserveret.: " + error.message);
     }
 }
