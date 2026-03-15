@@ -74,7 +74,7 @@ function buildCalendar(timeslots, month, year, activityId, activityName) {
         <p>${selectedActivity.description || "Ingen beskrivelse"}</p>
         <p>Aldersgrænse: ${selectedActivity.minimumAge}</p>
         <p>Der er plads til ${selectedActivity.maxParticipants} deltagere</p>
-        <p>Pris: ${selectedActivity.price} kr.</p>
+        <p>Pris: ${selectedActivity.price} DKK</p>
     `;
 
     // Container for kalender + tidstabel
