@@ -1,0 +1,33 @@
+#equipmentTable{
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+#equipmentTable th,
+#equipmentTable td{
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+}
+
+#equipmentTable th{
+    background-color: #f2f2f2;
+}
+
+/* Status colors */
+
+.status-green{
+    color: green;
+    font-weight: bold;
+}
+
+.status-yellow{
+    color: orange;
+    font-weight: bold;
+}
+
+.status-red{
+    color: red;
+    font-weight: bold;
+}
