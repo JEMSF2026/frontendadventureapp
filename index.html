@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <title>Adventure App</title>
+    <!-- Public-facing styles only -->
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/activityCalenders.css">
+    <link rel="stylesheet" href="css/cart.css">
+    <link rel="stylesheet" href="css/packages.css">
+    <link rel="stylesheet" href="css/reservationView.css">
+</head>
+<body>
+
+<header>
+    <nav>
+        <a class="logo" href="index.html">JEMS Adventure</a>
+        <ul class="nav-list">
+            <li class="nav-item dropdown-parent">
+                <a href="#" id="aktiviteter-btn">Aktiviteter ▾</a>
+                <ul class="dropdown" id="activity-dropdown"></ul>
+            </li>
+            <li class="nav-item"><a href="#" id="reservation-btn">Se reservation</a></li>
+            <li class="nav-item"><a href="#" id="packages-btn">Firmapakker</a></li>
+            <li class="nav-item cart">
+                <a href="#" id="cart-icon">
+                    🛒 <span id="cart-count">0</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+
+<div class="content"></div>
+
+<!-- All scripts are ES modules; they are deferred by default -->
+<script type="module" src="indexJS/allActivities.js"></script>
+<script type="module" src="indexJS/map.js"></script>
+<script type="module" src="indexJS/cart.js"></script>
+<script type="module" src="indexJS/activityCalenders.js"></script>
+<script type="module" src="indexJS/reservationView.js"></script>
+<script type="module" src="indexJS/packages.js"></script>
+<script type="module" src="indexJS/packageBookingCalendar.js"></script>
+</body>
+</html>

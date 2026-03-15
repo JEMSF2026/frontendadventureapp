@@ -1,0 +1,389 @@
+.hidden {
+    display: none !important;
+}
+
+.nav-portal-label {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.nav-active {
+    background-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+.nav-logout {
+    color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.nav-logout:hover {
+    color: #ffffff !important;
+}
+
+/* Login layout */
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 64px);
+    background-color: #f0f2f5;
+}
+
+.login-card {
+    background: white;
+    border-radius: 12px;
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.10);
+}
+
+.login-card h2 {
+    color: #1a1a2e;
+    margin-bottom: 0.4rem;
+    font-size: 1.6rem;
+}
+
+.login-subtitle {
+    color: #888;
+    font-size: 0.9rem;
+    margin-bottom: 1.8rem;
+}
+
+.form-group {
+    margin-bottom: 1.2rem;
+}
+
+.form-group label {
+    display: block;
+    color: #333;
+    font-size: 0.9rem;
+    margin-bottom: 0.4rem;
+    font-weight: bold;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.65rem 0.9rem;
+    border: 1.5px solid #ddd;
+    border-radius: 6px;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.form-group input:focus {
+    border-color: #1a1a2e;
+}
+
+.login-btn {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: #1a1a2e;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-top: 0.5rem;
+    transition: background-color 0.2s;
+}
+
+.login-btn:hover {
+    background-color: #2d2d50;
+}
+
+.login-error {
+    color: #e63946;
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+}
+
+.back-link {
+    display: block;
+    text-align: center;
+    margin-top: 1.2rem;
+    color: #888;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.back-link:hover {
+    color: #1a1a2e;
+}
+
+/* Aktivitetsstyring */
+.activity-management-section {
+    padding-top: 1rem;
+}
+
+.activity-management-section h1 {
+    margin-bottom: 1.5rem;
+    color: #1a1a2e;
+}
+
+.activity-form-card {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    max-width: 500px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+}
+
+.activity-form-card h2 {
+    color: #1a1a2e;
+    font-size: 1.2rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-group textarea {
+    width: 100%;
+    padding: 0.65rem 0.9rem;
+    border: 1.5px solid #ddd;
+    border-radius: 6px;
+    font-size: 1rem;
+    outline: none;
+    resize: vertical;
+    font-family: inherit;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+
+.form-group textarea:focus {
+    border-color: #1a1a2e;
+}
+
+.form-group input {
+    box-sizing: border-box;
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: #1a1a2e;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-top: 0.5rem;
+    transition: background-color 0.2s;
+}
+
+.submit-btn:hover {
+    background-color: #2d2d50;
+}
+
+.form-error {
+    color: #e63946;
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+}
+
+.form-success {
+    color: #2a9d8f;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Aktivitetsstyring – layout */
+.activity-management-layout {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+}
+
+.activity-list-panel {
+    flex: 0 0 220px;
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+}
+
+.activity-list-panel h2 {
+    color: #1a1a2e;
+    font-size: 1rem;
+    margin-top: 1.2rem;
+    margin-bottom: 0.75rem;
+}
+
+.create-activity-btn {
+    width: 100%;
+    padding: 0.6rem 0.8rem;
+    background-color: #1a1a2e;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    text-align: left;
+    transition: background-color 0.15s;
+}
+
+.create-activity-btn:hover,
+.create-activity-btn.active {
+    background-color: #2d2d50;
+}
+
+.activity-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.activity-list-item {
+    padding: 0.6rem 0.8rem;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #333;
+    transition: background-color 0.15s;
+}
+
+.activity-list-item:hover {
+    background-color: #f0f2f5;
+}
+
+.activity-list-item.active {
+    background-color: #1a1a2e;
+    color: white;
+}
+
+/* Aktivitetsstyring – detalje-panel */
+.activity-detail-panel {
+    flex: 1;
+}
+
+.activity-detail-card {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+}
+
+.activity-detail-card h2 {
+    color: #1a1a2e;
+    margin-bottom: 0.5rem;
+}
+
+.activity-detail-card h3 {
+    color: #1a1a2e;
+    font-size: 1rem;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.activity-detail-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.activity-detail-header h2 {
+    margin-bottom: 0;
+}
+
+.activity-detail-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.edit-activity-btn {
+    padding: 0.4rem 0.9rem;
+    background-color: white;
+    color: #1a1a2e;
+    border: 1.5px solid #1a1a2e;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+    white-space: nowrap;
+}
+
+.edit-activity-btn:hover {
+    background-color: #1a1a2e;
+    color: white;
+}
+
+.delete-activity-btn {
+    padding: 0.4rem 0.9rem;
+    background-color: white;
+    color: #e63946;
+    border: 1.5px solid #e63946;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+    white-space: nowrap;
+}
+
+.delete-activity-btn:hover {
+    background-color: #e63946;
+    color: white;
+}
+
+.activity-detail-description {
+    color: #555;
+    margin-bottom: 0.75rem;
+}
+
+.activity-detail-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 1rem;
+}
+
+/* Tidsrum-tabel */
+.timeslot-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+}
+
+.timeslot-table th {
+    text-align: left;
+    padding: 0.5rem 0.75rem;
+    background-color: #f0f2f5;
+    color: #1a1a2e;
+}
+
+.timeslot-table td {
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid #eee;
+    color: #333;
+}
+
+.no-timeslots {
+    color: #888;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.add-timeslot-btn {
+    width: auto;
+    padding: 0.6rem 1.2rem;
+    margin-bottom: 1rem;
+}
+
+/* Tidsrum-formular */
+.timeslot-form-card {
+    background: #f8f9fb;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-top: 0.5rem;
+    max-width: 480px;
+}
+
+.timeslot-form-card h3 {
+    color: #1a1a2e;
+    font-size: 1rem;
+    margin-top: 0;
+    margin-bottom: 1rem;
+}
