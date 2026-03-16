@@ -5,7 +5,7 @@
  */
 import { API_BASE_URL } from "./config.js";
 import { formatDate, formatTime, updateCartCount } from "./utils.js";
-import { renderConfirmation } from "./bookingConfirmation.js";
+import { renderConfirmation } from "./confirmation.js";
 
 /** Bygger den fulde kurvvisning (kurvelementer + kundeformular + checkout-knap). */
 export function renderCart() {

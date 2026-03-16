@@ -4,7 +4,7 @@
  */
 import { API_BASE_URL } from "./config.js";
 import { renderPackages } from "./packages.js";
-import { renderPackageCalendar } from "./packageBookingCalendar.js";
+import { renderPackageCalendar } from "./packageCalendar.js";
 
 /** Henter pakke via id og viser detaljevisningen. */
 export async function renderPackageDetails(id) {

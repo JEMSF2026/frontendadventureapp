@@ -5,7 +5,7 @@
  * så en unødvendig ekstra hentning undgås når brugeren indsender.
  */
 import { API_BASE_URL } from "./config.js";
-import { renderPackageConfirmation } from "./bookingConfirmation.js";
+import { renderPackageConfirmation } from "./confirmation.js";
 
 // Standard deltagerantal til tidsrum-forhåndsvisning (samme som kalendersteget)
 const DEFAULT_PARTICIPANTS = 10;

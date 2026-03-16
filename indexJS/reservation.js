@@ -1,7 +1,9 @@
 /**
- * reservationView.js
+ * reservation.js
  * Giver kunden mulighed for at slå sin reservation op via bookingnummer.
  * Bookingnummeret indsamles via en browser-prompt.
+ *
+ * Tidligere hedde denne fil reservationView.js.
  */
 import { API_BASE_URL } from "./config.js";
 import { formatDate, formatTime } from "./utils.js";
@@ -32,7 +34,7 @@ function renderReservation(reservation) {
 
     // Vis kun kundefelter der har en værdi — virksomhedsfelter udelades for privatpersoner
     const customerBox = card.querySelector(".customer-info");
-    const fields = [
+    const felter = [
         { label: "Fornavn",   value: reservation.customer.firstName },
         { label: "Efternavn", value: reservation.customer.lastName },
         { label: "Email",     value: reservation.customer.email },
@@ -40,15 +42,16 @@ function renderReservation(reservation) {
         { label: "Firmanavn", value: reservation.customer.companyName },
         { label: "CVR",       value: reservation.customer.cvr }
     ];
-    fields.forEach(field => {
-        if (field.value) {
+    felter.forEach(felt => {
+        if (felt.value) {
             const p = document.createElement("p");
-            p.innerHTML = `<strong>${field.label}:</strong> ${field.value}`;
+            p.innerHTML = `<strong>${felt.label}:</strong> ${felt.value}`;
             customerBox.appendChild(p);
         }
     });
 
-    const timeslotSection = card.querySelector(".timeslot-section");
+    // Vis hvert tidsrum/aktivitet i reservationen
+    const tidsrumSektion = card.querySelector(".timeslot-section");
     reservation.timeslots.forEach(ts => {
         const div = document.createElement("div");
         div.classList.add("timeslot-item");
@@ -59,17 +62,17 @@ function renderReservation(reservation) {
             Deltagere: ${ts.participants}<br>
             Pris: ${ts.activity.price} DKK
         `;
-        timeslotSection.appendChild(div);
+        tidsrumSektion.appendChild(div);
     });
 
-    const totalPrice = document.createElement("p");
-    totalPrice.innerHTML = `<strong>Samlet pris: ${reservation.price} DKK</strong>`;
-    timeslotSection.appendChild(totalPrice);
+    const totalPris = document.createElement("p");
+    totalPris.innerHTML = `<strong>Samlet pris: ${reservation.price} DKK</strong>`;
+    tidsrumSektion.appendChild(totalPris);
 
     container.appendChild(card);
 }
 
-// Moduler er udskudt så DOM er garanteret klar — intet DOMContentLoaded-omslag nødvendigt
+// Klik på "Se reservation" → spørg om bookingnummer og vis reservationen
 document.getElementById("reservation-btn").addEventListener("click", async (e) => {
     e.preventDefault();
 
